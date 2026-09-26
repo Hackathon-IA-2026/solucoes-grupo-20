@@ -1,0 +1,25 @@
+sources:
+  ONS_BALANCO_ENERGIA_SUBSISTEMA:
+    native_resolution: 1h
+    canonical_resolution: 1h
+    key: [interval_start_utc, subsystem_id]
+    required_source_columns: [id_subsistema, nom_subsistema, din_instante, val_gerhidraulica, val_gertermica, val_gereolica, val_gersolar, val_carga, val_intercambio]
+    availability_class: observed_revised
+    allowed_roles: [target_history, observed_supply_context]
+    forbidden_roles: [future_generation_feature]
+  CLIMATE_HISTORICAL:
+    native_resolution: 1h
+    canonical_resolution: 1h
+    key: [interval_start_utc, cell_id]
+    availability_class: historical_reanalysis
+    allowed_roles: [training_feature, perfect_weather_backtest]
+    forbidden_roles: [operational_future_weather]
+  CLIMATE_FORECAST:
+    native_resolution: 1h
+    canonical_resolution: 1h
+    availability_class: issue_time_forecast
+    allowed_roles: [operational_future_weather]
+  ANEEL_TARIFF:
+    availability_class: validity_interval
+    allowed_roles: [motor_2_base_tariff]
+    forbidden_roles: [demand_model_feature]

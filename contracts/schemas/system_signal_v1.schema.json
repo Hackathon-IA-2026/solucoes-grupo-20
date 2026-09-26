@@ -1,0 +1,114 @@
+{
+  "$defs": {
+    "ZoneType": {
+      "enum": [
+        "SUBSYSTEM",
+        "SIN",
+        "DISTRIBUTOR"
+      ],
+      "title": "ZoneType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "system_signal_v1",
+      "pattern": "^system_signal_v1$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "interval_start_utc": {
+      "format": "date-time",
+      "title": "Interval Start Utc",
+      "type": "string"
+    },
+    "zone_type": {
+      "$ref": "#/$defs/ZoneType"
+    },
+    "zone_id": {
+      "minLength": 1,
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "demand_p10_mw": {
+      "minimum": 0,
+      "title": "Demand P10 Mw",
+      "type": "number"
+    },
+    "demand_p50_mw": {
+      "minimum": 0,
+      "title": "Demand P50 Mw",
+      "type": "number"
+    },
+    "demand_p90_mw": {
+      "minimum": 0,
+      "title": "Demand P90 Mw",
+      "type": "number"
+    },
+    "demand_percentile": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Demand Percentile",
+      "type": "number"
+    },
+    "supply_pressure": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supply Pressure"
+    },
+    "climate_exposure": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Climate Exposure",
+      "type": "number"
+    },
+    "generation_by_type_json": {
+      "title": "Generation By Type Json",
+      "type": "string"
+    },
+    "main_drivers_json": {
+      "title": "Main Drivers Json",
+      "type": "string"
+    },
+    "data_freshness_ok": {
+      "title": "Data Freshness Ok",
+      "type": "boolean"
+    },
+    "quality_flags": {
+      "title": "Quality Flags",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "interval_start_utc",
+    "zone_type",
+    "zone_id",
+    "demand_p10_mw",
+    "demand_p50_mw",
+    "demand_p90_mw",
+    "demand_percentile",
+    "climate_exposure",
+    "generation_by_type_json",
+    "main_drivers_json",
+    "data_freshness_ok",
+    "quality_flags"
+  ],
+  "title": "SystemSignalV1",
+  "type": "object"
+}

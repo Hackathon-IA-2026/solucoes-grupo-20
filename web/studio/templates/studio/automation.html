@@ -1,0 +1,157 @@
+{% extends 'studio/base.html' %}
+{% load date_display %}
+{% block title %}Automação · Predicta{% endblock %}
+{% block content %}
+<section class="page-header automation-header">
+  <div>
+    <p class="eyebrow">Automação ponta a ponta</p>
+    <h1>Um botão para reconstruir ciência, modelos e operação 24h</h1>
+    <p>Esta tela executa o fluxo completo em ordem segura: histórico ONS → tarifas → <b>Climate Store local-first</b> → clima e baseline de 10 anos → features E3 → validação Ridge/XGBoost → treino dos 24 horizontes para N, NE, SE/CO e S → seleção por WAPE → previsão meteorológica operacional → publicação do <code>system_signal_v1</code>.</p>
+  </div>
+  <div class="warning-box narrow"><b>Importante:</b> o operacional só é publicado quando a carga ONS está suficientemente fresca e existe previsão meteorológica real para H01–H24. Se o ONS estiver defasado, a automação treina normalmente, mas bloqueia a publicação operacional em vez de fingir que o dado é atual.</div>
+</section>
+
+<section class="panel automation-flow-panel">
+  <div class="panel-head"><div><h2>O que o botão executa</h2><p>Não é apenas uma sequência de scripts: cada bloco tem um gate e produz artefatos auditáveis.</p></div></div>
+  <div class="automation-flow">
+    <div><b>1</b><span>Testes + contratos</span><small>anti-leakage, schemas e qualidade</small></div>
+    <i>→</i><div><b>2</b><span>ONS + tarifa</span><small>histórico multi-ano e ANEEL por CNPJ</small></div>
+    <i>→</i><div><b>3</b><span>Clima multi-ano 0,1°</span><small>rolling baseline Y-10…Y-1 + usinas</small></div>
+    <i>→</i><div><b>4</b><span>Ridge + XGBoost</span><small>valida e congela H01–H24</small></div>
+    <i>→</i><div><b>5</b><span>Seleção regional</span><small>menor WAPE no holdout</small></div>
+    <i>→</i><div><b>6</b><span>Operacional 24h</span><small>weather forecast + system_signal_v1</small></div>
+  </div>
+</section>
+
+<div class="two-col automation-grid">
+<section class="panel automation-config-panel">
+  <div class="panel-head"><div><h2>Configuração da execução completa</h2><p>Os quatro subsistemas e os dois algoritmos são sempre executados. Você configura apenas o período e os gates.</p></div></div>
+  <form method="post" action="{% url 'studio:run_stage' 'full_automation' %}" class="automation-form">{% csrf_token %}
+    <div class="form-grid automation-form-grid">
+      <label class="field"><span>Histórico · ano inicial</span><input type="number" name="start_year" value="2023" min="2010" max="2030"><small>ONS e clima começam automaticamente aqui.</small></label>
+      <label class="field"><span>Histórico · ano final</span><input type="number" name="end_year" value="2026" min="2010" max="2030"><small>O último ano é recortado ao dado efetivamente disponível.</small></label>
+      <label class="field"><span>Grade climática</span><select name="climate_grid_mode"><option value="adaptive" selected>Adaptativa 0,1° + todas as células de usinas</option><option value="full">Full grid Brasil 0,1° · muito pesado</option></select><small>Não existe mais “ano climático” único: E2/E3 acompanham todos os anos do histórico.</small></label>
+      <label class="field"><span>Histórico climático</span><select name="climate_history_mode"><option value="local-first" selected>Local first · API somente para gaps</option><option value="local-only">Local only · nunca usar API histórica</option></select><small>Depois do backfill, use local-only para tornar treino e baseline independentes da API histórica.</small></label>
+      <label class="field"><span>Climate Store</span><input type="text" name="climate_store_root" value="data/climate_store"><small>Preserve este diretório ao atualizar versões do projeto.</small></label>
+      <label class="field"><span>Holdout de teste</span><div class="input-suffix"><input type="number" name="test_hours" value="720" min="168"><b>h</b></div><small>720h = 30 dias.</small></label>
+      <label class="field"><span>Passo da amostra regional</span><div class="input-suffix"><input type="number" name="climate_stride_cells" value="20" min="1"><b>cél.</b></div><small>20 = ~2°. Células com usinas entram sempre em resolução 0,1°.</small></label>
+      <label class="field"><span>Treino · início opcional</span><input type="date" name="history_start"><small>Se vazio, usa todo o overlap elegível.</small></label>
+      <label class="field"><span>Treino · fim opcional</span><input type="date" name="history_end"><small>Se vazio, usa o último dado elegível.</small></label>
+      <label class="field"><span>Calibração p10–p90</span><div class="input-suffix"><input type="number" name="calibration_hours" value="720" min="48"><b>h</b></div></label>
+      <label class="field"><span>Máx. defasagem ONS operacional</span><div class="input-suffix"><input type="number" name="max_load_staleness_hours" value="3" min="1" max="72"><b>h</b></div><small>Acima disso o publish operacional é bloqueado.</small></label>
+    </div>
+    <details class="advanced-config"><summary>Hiperparâmetros dos dois modelos</summary>
+      <div class="form-grid automation-form-grid">
+        <label class="field"><span>Ridge alpha</span><input type="number" step="0.1" name="alpha" value="1.0"></label>
+        <label class="field"><span>XGBoost · árvores</span><input type="number" name="n_estimators" value="350"></label>
+        <label class="field"><span>XGBoost · profundidade</span><input type="number" name="max_depth" value="6"></label>
+        <label class="field"><span>XGBoost · learning rate</span><input type="number" step="0.01" name="learning_rate" value="0.05"></label>
+        <label class="field"><span>XGBoost · subsample</span><input type="number" step="0.05" name="subsample" value="0.9"></label>
+        <label class="field"><span>XGBoost · colsample</span><input type="number" step="0.05" name="colsample_bytree" value="0.9"></label>
+        <label class="field"><span>Open-Meteo · batch horário</span><input type="number" name="climate_batch_size" value="6" min="1" max="50"><small>Usado no histórico horário E2.</small></label>
+        <label class="field"><span>Open-Meteo · batch diário</span><input type="number" name="climate_daily_batch_size" value="24" min="1" max="100"><small>Usado no baseline/E3 diário; mistura fusos na mesma chamada para reduzir requests.</small></label>
+        <label class="field"><span>Endpoint histórico</span><input type="text" name="climate_archive_url" placeholder="API pública (vazio) ou http://127.0.0.1:8080/v1/archive"><small>Para backfill 0,1° em alto volume, prefira endpoint local/self-hosted. API key, se houver, deve ficar em <code>PREDICTA_OPENMETEO_API_KEY</code>.</small></label>
+        <label class="field"><span>Pausa entre batches</span><div class="input-suffix"><input type="number" step="0.5" name="climate_request_delay" value="2.0"><b>s</b></div></label>
+        <label class="field"><span>Retries HTTP 429/5xx</span><input type="number" name="climate_max_retries" value="10" min="0" max="15"></label>
+        <label class="field"><span>Backoff inicial</span><div class="input-suffix"><input type="number" step="1" name="climate_backoff" value="10"><b>s</b></div></label>
+        <label class="field"><span>429 consecutivos antes do cooldown</span><input type="number" name="climate_cooldown_after_429" value="3" min="1" max="10"></label>
+        <label class="field"><span>Cooldown global</span><div class="input-suffix"><input type="number" step="10" name="climate_cooldown_seconds" value="90"><b>s</b></div><small>Depois do limiar, todo o downloader espera antes de continuar.</small></label>
+        <label class="field"><span>Espera após quota persistente</span><div class="input-suffix"><input type="number" step="60" name="climate_defer_wait_seconds" value="900"><b>s</b></div><small>Se todos os retries terminarem em 429, o checkpoint é preservado e a automação retoma depois desta espera.</small></label>
+        <label class="field"><span>Ciclos automáticos de retomada</span><input type="number" name="climate_defer_cycles" value="8" min="0" max="48"><small>Ao esgotar os ciclos, o status vira WAITING_RATE_LIMIT em vez de FAILED.</small></label>
+        <label class="field"><span>Issue operacional</span><input type="text" name="operational_issue" value="auto"><small><code>auto</code> usa a última hora ONS comum aos quatro subsistemas.</small></label>
+      </div>
+    </details>
+    <div class="automation-options">
+      <label class="check-field"><input type="checkbox" name="skip_tests"><span>Pular testes automatizados</span></label>
+      <label class="check-field"><input type="checkbox" name="skip_operational"><span>Treinar tudo, mas não publicar operacional nesta execução</span></label>
+    </div>
+    <button class="button primary automation-main-button" type="submit"><span>▶</span> Executar pipeline completo + treinar Ridge e XGBoost</button>
+    <small class="automation-duration-note">A primeira execução pode demorar para completar o backfill. Depois disso o Climate Store é consultado primeiro e apenas intervalos realmente ausentes podem acessar a rede. Em 429 persistente, o job passa para WAITING_RATE_LIMIT e retoma do checkpoint; não perde os batches concluídos. Para backfill nacional 0,1° de muitos anos, a API pública pode atingir o orçamento diário e um endpoint local/self-hosted é o caminho recomendado.</small>
+  </form>
+  <div class="method-box"><b>Baselines sem vazamento:</b><p>Para cada ano Y do histórico, a automação constrói o baseline com Y-10…Y-1. Ex.: 2023→2013–2022; 2024→2014–2023; 2025→2015–2024; 2026→2016–2025.</p></div>
+</section>
+
+<section class="panel climate-store-panel">
+  <div class="panel-head"><div><h2>Climate Store local</h2><p>Histórico persistente em disco. O pipeline pode ser colocado em <b>local-only</b> depois que a cobertura necessária estiver completa.</p></div><span class="badge {% if climate_store.total_files %}status-success{% else %}status-pending{% endif %}">{{ climate_store.total_files }} arquivos</span></div>
+  <div class="explain-grid">
+    <div><b>N</b><p>{{ climate_store.regions.n.hourly.files }} horário · {{ climate_store.regions.n.daily.files }} diário</p></div>
+    <div><b>NE</b><p>{{ climate_store.regions.ne.hourly.files }} horário · {{ climate_store.regions.ne.daily.files }} diário</p></div>
+    <div><b>SE/CO</b><p>{{ climate_store.regions.seco.hourly.files }} horário · {{ climate_store.regions.seco.daily.files }} diário</p></div>
+    <div><b>S</b><p>{{ climate_store.regions.s.hourly.files }} horário · {{ climate_store.regions.s.daily.files }} diário</p></div>
+  </div>
+  <div class="two-fields">
+    <form method="post" action="{% url 'studio:run_stage' 'seed_climate_store' %}">{% csrf_token %}<input type="hidden" name="climate_store_root" value="data/climate_store"><button class="button large" type="submit">Migrar caches já baixados para o Climate Store</button><small class="help-text">Não usa internet. Reaproveita <code>data/raw/climate/annual_archive</code>.</small></form>
+    <form method="post" action="{% url 'studio:run_stage' 'update_climate_store' %}">{% csrf_token %}<input type="hidden" name="climate_store_root" value="data/climate_store"><div class="two-fields"><label class="field"><span>Ano inicial</span><input type="number" name="start_year" value="2026"></label><label class="field"><span>Ano final</span><input type="number" name="end_year" value="2026"></label></div><button class="button primary large" type="submit">Baixar somente gaps / novos dias</button><small class="help-text">Consulta local primeiro; anos e dias já presentes não são solicitados novamente.</small></form>
+  </div>
+  <form method="post" action="{% url 'studio:run_stage' 'verify_climate_store' %}" class="climate-store-verify-form">{% csrf_token %}
+    <input type="hidden" name="climate_store_root" value="data/climate_store">
+    <div class="two-fields"><label class="field"><span>Verificar desde</span><input type="number" name="start_year" value="2023"></label><label class="field"><span>até</span><input type="number" name="end_year" value="2026"></label></div>
+    <button class="button" type="submit">Verificar se posso usar LOCAL ONLY</button>
+  </form>
+  {% if climate_store_coverage %}<div class="mode-status {% if climate_store_coverage.ready_local_only %}replay{% else %}unavailable{% endif %}"><b>{{ climate_store_coverage.status }}</b><span>{% if climate_store_coverage.ready_local_only %}O histórico necessário está coberto localmente. Você pode treinar sem API histórica.{% else %}Ainda existem {{ climate_store_coverage.missing_ranges }} gaps célula/data no período verificado.{% endif %}</span></div>{% endif %}
+  <div class="method-box"><b>Modo recomendado depois do backfill:</b><p><code>climate_history_mode=local-only</code>. Nesse modo treino, E2, E3 e baselines históricos falham se houver uma lacuna local, em vez de acessar silenciosamente a API.</p></div>
+</section>
+
+<section class="panel operational-refresh-panel">
+  <div class="panel-head"><div><h2>Depois do treino: atualização operacional rápida</h2><p>Esse botão não retreina. Ele reaproveita o vencedor de cada região, atualiza ONS + previsão do tempo e republica as próximas 24h.</p></div></div>
+  <form method="post" action="{% url 'studio:run_stage' 'refresh_operational' %}">{% csrf_token %}
+    <div class="form-grid compact-form">
+      <label class="field"><span>Ano inicial ONS</span><input type="number" name="start_year" value="2021"></label>
+      <label class="field"><span>Issue time</span><input type="text" name="issue_time" value="auto"></label>
+      <label class="field"><span>Máx. defasagem</span><div class="input-suffix"><input type="number" name="max_load_staleness_hours" value="3"><b>h</b></div></label>
+    </div>
+    <button class="button large" type="submit">Atualizar operacional H01–H24 agora</button>
+  </form>
+  <div class="method-box"><b>Operação recomendada:</b><ol><li>treine/valide em ciclos controlados;</li><li>mantenha o registry regional congelado;</li><li>rode apenas a atualização operacional de forma recorrente;</li><li>reentre em treino quando houver janela planejada ou drift.</li></ol></div>
+</section>
+</div>
+
+<section class="panel">
+  <div class="panel-head"><div><h2>Estado atual dos artefatos</h2><p>Mostra até onde o ambiente chegou, independentemente de qual botão foi usado.</p></div></div>
+  <div class="automation-status-grid">
+    <div class="{% if automation_statuses.load %}ok{% endif %}"><b>{% if automation_statuses.load %}✓{% else %}—{% endif %}</b><span>Histórico ONS</span></div>
+    <div class="{% if automation_statuses.climate_store %}ok{% endif %}"><b>{% if automation_statuses.climate_store %}✓{% else %}—{% endif %}</b><span>Climate Store local</span></div>
+    <div class="{% if automation_statuses.tariffs %}ok{% endif %}"><b>{% if automation_statuses.tariffs %}✓{% else %}—{% endif %}</b><span>Tarifas ANEEL</span></div>
+    <div class="{% if automation_statuses.climate_e3 %}ok{% endif %}"><b>{% if automation_statuses.climate_e3 %}✓{% else %}—{% endif %}</b><span>Clima E3 + baseline</span></div>
+    <div class="{% if automation_statuses.registry %}ok{% endif %}"><b>{% if automation_statuses.registry %}✓{% else %}—{% endif %}</b><span>Modelos regionais selecionados</span></div>
+    <div class="{% if automation_statuses.operational_weather %}ok{% endif %}"><b>{% if automation_statuses.operational_weather %}✓{% else %}—{% endif %}</b><span>Weather forecast operacional</span></div>
+    <div class="{% if automation_statuses.system_signal %}ok{% endif %}"><b>{% if automation_statuses.system_signal %}✓{% else %}—{% endif %}</b><span>system_signal_v1</span></div>
+  </div>
+</section>
+
+<div class="two-col">
+<section class="panel">
+  <div class="panel-head"><div><h2>Modelo operacional por região</h2><p>A automação valida Ridge e XGBoost no mesmo holdout e registra o menor WAPE de cada subsistema. Isso não mistura modelos entre regiões.</p></div></div>
+  {% if registry_rows %}
+  <div class="table-wrap"><table class="basic-table"><thead><tr><th>Subsistema</th><th>Selecionado</th><th>WAPE</th><th>Família</th></tr></thead><tbody>
+    {% for r in registry_rows %}<tr><td><b>{{ r.region }}</b></td><td>{{ r.algorithm|default:'—' }}</td><td>{% if r.wape is not None %}{{ r.wape|floatformat:4 }}{% else %}—{% endif %}</td><td>{{ r.model_family_id|default:'—' }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<div class="empty-state">A automação completa ainda não gerou o registry regional.</div>{% endif %}
+</section>
+
+<section class="panel">
+  <div class="panel-head"><div><h2>Gate operacional por região</h2><p>O produto só deve chamar “operacional” quando as quatro regiões realmente tiverem 24 horas futuras válidas.</p></div></div>
+  <div class="stack-list">
+    {% for r in op_rows %}<div class="list-card"><div><b>{{ r.region }}</b><small>{{ r.reason }}</small></div><span class="badge {% if r.available %}status-success{% else %}status-failed{% endif %}">{% if r.available %}READY{% else %}BLOQUEADO{% endif %}</span></div>{% endfor %}
+  </div>
+</section>
+</div>
+
+{% if automation_report %}
+<section class="panel">
+  <div class="panel-head"><div><h2>Última automação completa</h2><p>Status persistido em <code>outputs/reports/full_automation.json</code>.</p></div><span class="badge {% if 'SUCCESS' in automation_report.status %}status-success{% elif automation_report.status == 'FAILED' %}status-failed{% else %}status-running{% endif %}">{{ automation_report.status }}</span></div>
+  <div class="explain-grid">
+    <div><b>Início</b><p>{% human_date automation_report.started_at_utc %}</p></div>
+    <div><b>Fim</b><p>{% human_date automation_report.finished_at_utc %}</p></div>
+    <div><b>Etapas registradas</b><p>{{ automation_report.steps|length }}</p></div>
+    <div><b>Operacional</b><p>{{ automation_report.operational_status|default:'não executado' }}</p></div>
+  </div>
+  {% if automation_report.error %}<div class="error-box"><b>Último erro:</b> {{ automation_report.error }}</div>{% endif %}{% if automation_report.operational_error %}<div class="warning-box"><b>Operacional bloqueado:</b> {{ automation_report.operational_error }}</div>{% endif %}
+</section>
+{% endif %}
+
+<section class="panel">
+  <div class="panel-head"><div><h2>Execuções recentes</h2><p>O processamento é disparado em background; abra o log para acompanhar cada etapa.</p></div></div>
+  <div class="run-list">{% for run in recent_runs %}<a class="run-row" href="{% url 'studio:run_detail' run.id %}"><span class="badge status-{{ run.status|lower }}">{{ run.status }}</span><span><b>{{ run.stage_label }}</b><small>{% human_date run.created_at %}</small></span><span>ver log →</span></a>{% empty %}<div class="empty-state">Nenhuma automação executada ainda.</div>{% endfor %}</div>
+</section>
+{% endblock %}

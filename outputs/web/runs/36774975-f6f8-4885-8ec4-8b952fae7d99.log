@@ -1,0 +1,19 @@
+Predicta Web Pipeline
+Stage: Carregar mapa + tarifas ANEEL
+Command: ["/home/raul/Projetos/hackathon-ia-2026/.venv/bin/python3", "scripts/44_prepare_tariff_geography.py"]
+
+{
+  "tariff_source": "references/tarifas_homologadas_distribuidoras_energia_eletrica.csv.gz",
+  "raw_rows": 328083,
+  "tariff_application_volumetric_rows": 114834,
+  "normalized_base_rows": 114834,
+  "geo_areas": 103,
+  "geo_areas_with_tariff_history": 103,
+  "geo_match_rate": 1.0,
+  "unique_tariff_cnpj": 115,
+  "base_output": "data/processed/tariff/base_tariffs.parquet",
+  "catalog_output": "data/processed/tariff/distributor_catalog.csv",
+  "geo_output": "data/processed/tariff/distributor_areas_wgs84.geojson",
+  "join_key": "CNPJ digits: GeoJSON cnpj ↔ ANEEL NumCNPJDistribuidora",
+  "product_scope": "TE+TUSD volumétricas, Tarifa de Aplicação. R$/kW e demais componentes da fatura permanecem fora do preço volumétrico mostrado."
+}

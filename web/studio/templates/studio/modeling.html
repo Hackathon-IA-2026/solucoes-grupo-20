@@ -1,0 +1,36 @@
+{% extends 'studio/base.html' %}
+{% load date_display %}
+{% block title %}Modelagem · Predicta{% endblock %}
+{% block content %}
+<section class="page-header"><div><p class="eyebrow">3 · Modelagem</p><h1>Treine uma configuração antes de promovê-la</h1><p>Escolha features, algoritmo e janela histórica. Esta etapa sempre termina em <b>validação held-out</b>; ela não altera o modelo ativo do produto.</p></div><div class="info-callout"><b>Quando entra XGBoost?</b> Aqui. Ele usa exatamente as mesmas features e o mesmo split temporal do Ridge, permitindo uma comparação justa.</div></section>
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Histórico disponível</p><h2>Escolha a janela de modelagem</h2></div><a href="{% url 'studio:data' %}">adicionar anos →</a></div>
+  {% if history.consolidated %}<p><b>{% human_date history.start %}</b> → <b>{% human_date history.end %}</b> · {{ history.rows }} linhas consolidadas.</p>{% else %}<div class="warning-box">Ainda não há histórico consolidado. Vá para Dados e adicione anos do ONS.</div>{% endif %}
+  <div class="coverage-row"><span><b>E1</b> usa todo o histórico ONS selecionado.</span><span><b>E2</b> clima: {% if history.climate_coverage.E2.exists %}{% human_date history.climate_coverage.E2.start %} → {% human_date history.climate_coverage.E2.end %}{% else %}não gerado{% endif %}</span><span><b>E3</b> clima/contexto: {% if history.climate_coverage.E3.exists %}{% human_date history.climate_coverage.E3.start %} → {% human_date history.climate_coverage.E3.end %}{% else %}não gerado{% endif %}</span></div>
+  <small class="help-text">Se você escolher uma janela maior que a cobertura climática, E2/E3 serão <b>automaticamente recortados para a interseção real ONS + clima</b>. O log mostra a janela efetiva. E1 continua podendo usar todo o histórico ONS.</small>
+</section>
+
+<section class="panel modeling-workbench">
+  <div class="panel-head"><div><p class="eyebrow">Configuração</p><h2>Validar modelo</h2><p>O sistema treina 24 modelos diretos (H01–H24), calibra p10/p90 antes do teste e mede MAE, RMSE, WAPE e cobertura.</p></div></div>
+  <form method="post" action="{% url 'studio:run_stage' validate_stage.id %}" id="modeling-form">{% csrf_token %}
+    <div class="form-grid">
+      <label class="field"><span>Features</span><select name="experiment"><option value="E1">E1 · histórico + calendário</option><option value="E2">E2 · + clima bruto</option><option value="E3" selected>E3 · + anomalias/eventos</option></select></label>
+      <label class="field"><span>Algoritmo</span><select name="algorithm" id="algorithm-select"><option value="ridge">Ridge</option><option value="xgboost">XGBoost</option></select><small>Ridge é o baseline linear; XGBoost captura relações não lineares.</small></label>
+      <label class="field"><span>Subsistema</span><select name="subsystem"><option value="SE/CO">SE/CO</option><option value="N">N</option><option value="NE">NE</option><option value="S">S</option></select></label>
+      <label class="field"><span>Histórico: início</span><input type="date" name="history_start"><small>Opcional. Ex.: 2022-01-01.</small></label>
+      <label class="field"><span>Histórico: fim</span><input type="date" name="history_end"><small>Opcional. O teste será retirado da cauda da janela efetiva. Para E2/E3, a janela efetiva é limitada pela cobertura climática.</small></label>
+      <label class="field"><span>Holdout de teste</span><input type="number" name="test_hours" value="720"><small>720 h = 30 dias finais nunca usados no treino.</small></label>
+      <label class="field"><span>Calibração p10–p90</span><input type="number" name="calibration_hours" value="720"></label>
+      <label class="field ridge-param"><span>Ridge alpha</span><input type="number" step="0.1" name="alpha" value="1.0"></label>
+    </div>
+    <div id="xgb-params" class="xgb-box" hidden><h3>Hiperparâmetros XGBoost</h3><div class="form-grid"><label class="field"><span>n_estimators</span><input type="number" name="n_estimators" value="350"></label><label class="field"><span>max_depth</span><input type="number" name="max_depth" value="6"></label><label class="field"><span>learning_rate</span><input type="number" step="0.01" name="learning_rate" value="0.05"></label><label class="field"><span>subsample</span><input type="number" step="0.05" name="subsample" value="0.9"></label><label class="field"><span>colsample_bytree</span><input type="number" step="0.05" name="colsample_bytree" value="0.9"></label></div></div>
+    <div class="modeling-actions"><button class="button primary large">Treinar + validar configuração</button><a class="button" href="{% url 'studio:validation' %}">Ver validações anteriores</a></div>
+  </form>
+</section>
+
+<section class="panel"><div class="panel-head"><div><p class="eyebrow">Como interpretar</p><h2>Modelagem não é deployment</h2></div></div><div class="explain-grid"><div><b>Treino</b><p>Aprende relações no passado disponível.</p></div><div><b>Calibração</b><p>Reserva uma cauda anterior ao teste para p10/p90.</p></div><div><b>Teste</b><p>Simula origens históricas H01–H24 sem acesso ao futuro observado.</p></div><div><b>Depois</b><p>Se a configuração for escolhida, congele-a em Modelos. Só então pode virar modelo ativo.</p></div></div></section>
+
+{% if recent_runs %}<section class="panel"><h2>Execuções recentes</h2><div class="run-list">{% for run in recent_runs %}<a href="{% url 'studio:run_detail' run.id %}" class="run-row"><span class="badge status-{{ run.status|lower }}">{{ run.get_status_display }}</span><b>{{ run.stage_label }}</b><span>{% human_date run.created_at %}</span></a>{% endfor %}</div></section>{% endif %}
+{% endblock %}
+{% block scripts %}<script>Predicta.bindAlgorithmForm('algorithm-select','xgb-params');</script>{% endblock %}

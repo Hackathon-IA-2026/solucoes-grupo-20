@@ -1,0 +1,27 @@
+Predicta v1.1.3 build validation
+
+Static compilation:
+  python -m compileall -q motor_sin motor_tarifa contracts scripts
+  status: OK
+
+Test suite:
+  52 passed, 2 skipped
+  skipped tests require pyarrow in the build environment.
+
+CLI smoke, no climate:
+  source-shaped ONS fixture -> normalize -> script 29 direct H01-H24
+  status: OK
+  origins: 30
+  target rows per experiment: 720
+  E1 model_strategy: direct_multi_horizon
+  horizon-specific calibration metadata: present
+
+CLI smoke, synthetic climate:
+  E0/E1/E2/E3 direct H01-H24
+  status: OK
+  NOTE: synthetic smoke metrics are integration checks only and are not scientific evidence.
+
+Anti-leakage regression tests:
+  - changing all future target observations does not change forecasts already emitted from a single issue time;
+  - changing observed H01 target does not change direct H02 forecast;
+  - calendar features remain derived in explicit local civil timezone.

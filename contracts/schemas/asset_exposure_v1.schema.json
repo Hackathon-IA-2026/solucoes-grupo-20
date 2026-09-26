@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "GeometryQuality": {
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "REAL",
+        "SCHEMATIC",
+        "UNKNOWN"
+      ],
+      "title": "GeometryQuality",
+      "type": "string"
+    },
+    "IncidentType": {
+      "enum": [
+        "HEAT",
+        "COLD",
+        "RAIN",
+        "WIND",
+        "SOLAR_DEFICIT"
+      ],
+      "title": "IncidentType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "asset_exposure_v1",
+      "pattern": "^asset_exposure_v1$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "interval_start_utc": {
+      "format": "date-time",
+      "title": "Interval Start Utc",
+      "type": "string"
+    },
+    "asset_id": {
+      "minLength": 1,
+      "title": "Asset Id",
+      "type": "string"
+    },
+    "asset_type": {
+      "minLength": 1,
+      "title": "Asset Type",
+      "type": "string"
+    },
+    "cell_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cell Id"
+    },
+    "geometry_quality": {
+      "$ref": "#/$defs/GeometryQuality"
+    },
+    "incident_type": {
+      "$ref": "#/$defs/IncidentType"
+    },
+    "incident_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Incident Score",
+      "type": "number"
+    },
+    "exposure_reason": {
+      "minLength": 1,
+      "title": "Exposure Reason",
+      "type": "string"
+    },
+    "generation_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generation Type"
+    },
+    "capacity_mw": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Capacity Mw"
+    },
+    "hub_score": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hub Score"
+    },
+    "voltage_kv": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Voltage Kv"
+    },
+    "transformer_mva": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transformer Mva"
+    },
+    "quality_flags": {
+      "title": "Quality Flags",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "interval_start_utc",
+    "asset_id",
+    "asset_type",
+    "geometry_quality",
+    "incident_type",
+    "incident_score",
+    "exposure_reason",
+    "quality_flags"
+  ],
+  "title": "AssetExposureV1",
+  "type": "object"
+}

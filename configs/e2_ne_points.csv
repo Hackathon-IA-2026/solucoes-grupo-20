@@ -1,0 +1,10 @@
+point_id,name,state,subsystem_id,latitude,longitude,timezone,weight
+ne_salvador,Salvador,BA,NE,-12.9777,-38.5016,America/Bahia,1
+ne_recife,Recife,PE,NE,-8.0476,-34.8770,America/Recife,1
+ne_fortaleza,Fortaleza,CE,NE,-3.7319,-38.5267,America/Fortaleza,1
+ne_sao_luis,São Luís,MA,NE,-2.5307,-44.3068,America/Fortaleza,1
+ne_teresina,Teresina,PI,NE,-5.0919,-42.8034,America/Fortaleza,1
+ne_natal,Natal,RN,NE,-5.7945,-35.2110,America/Fortaleza,1
+ne_joao_pessoa,João Pessoa,PB,NE,-7.1195,-34.8450,America/Fortaleza,1
+ne_maceio,Maceió,AL,NE,-9.6498,-35.7089,America/Maceio,1
+ne_aracaju,Aracaju,SE,NE,-10.9472,-37.0731,America/Maceio,1

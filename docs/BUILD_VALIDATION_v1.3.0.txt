@@ -1,0 +1,19 @@
+Predicta v1.3.0 build validation
+Date: 2026-09-19
+
+pytest -q
+64 passed, 2 skipped
+
+Skipped tests require pyarrow, which is not installed in the packaging environment.
+The user's local Predicta environment already uses pyarrow for Parquet I/O.
+
+E3-specific validation included:
+- exact 10-complete-year baseline window for target 2025 -> 2015-2024
+- local calendar-month temperature baseline
+- mean/p05/p10/p90/p95 with linear quantiles
+- Tmax/Tmin anomaly from monthly climatological mean
+- heat/cold severity predicates and wave consecutivity
+- precipitation and wind severity priority
+- historical storm compound rule
+- UTC-hour propagation from local daily context
+- E3 feature selection in direct H01-H24 models

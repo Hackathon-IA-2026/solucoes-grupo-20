@@ -1,0 +1,41 @@
+{% extends 'studio/base.html' %}
+{% load date_display %}
+{% block title %}Dados · Predicta{% endblock %}
+{% block content %}
+<section class="page-header"><div><p class="eyebrow">1 · Dados</p><h1>Monte e inspecione a base histórica</h1><p>Esta tela responde duas perguntas: <b>quais dados temos?</b> e <b>o que realmente entra no pipeline?</b>. Adicione anos do ONS antes de um novo ciclo de treino; o histórico consolidado é reconstruído sem apagar o RAW.</p></div><div class="info-callout"><b>Regra do MVP:</b> dados brutos são preservados. Treino usa os artefatos processados e versionados, não arquivos editados manualmente.</div></section>
+
+<div class="two-col">
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Carga ONS</p><h2>Histórico multi-ano</h2><p>Baixe anos ausentes e consolide uma única série horária por subsistema.</p></div></div>
+  <div class="history-years">{% for y in history.raw_years %}<span class="year-chip ok">{{ y }} ✓</span>{% empty %}<span class="year-chip">nenhum RAW detectado</span>{% endfor %}</div>
+  {% if history.consolidated %}<p class="help-text"><b>Consolidado:</b> {% human_date history.start %} → {% human_date history.end %} · {{ history.rows }} linhas.</p>{% endif %}
+  <form class="form-grid compact-form" method="post" action="{% url 'studio:run_stage' ons_stage.id %}">{% csrf_token %}
+    {% for p in ons_stage.params %}<label class="field"><span>{{ p.label }}</span><input type="{{ p.kind }}" name="{{ p.name }}" value="{{ p.default }}"><small>{{ p.help }}</small></label>{% endfor %}
+    <div class="form-action"><button class="button primary">Adicionar anos + consolidar</button></div>
+  </form>
+  {% if history.subsystems %}<div class="table-wrap slim"><table><thead><tr><th>Subsistema</th><th>Linhas</th><th>Início</th><th>Fim</th></tr></thead><tbody>{% for s in history.subsystems %}<tr><td>{{ s.id }}</td><td>{{ s.rows }}</td><td>{% human_date s.start %}</td><td>{% human_date s.end %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+</section>
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Tarifa + localização</p><h2>Catálogo ANEEL por CNPJ</h2><p>Relaciona o GeoJSON real das áreas de concessão ao CSV de tarifas homologadas pela chave CNPJ.</p></div></div>
+  <p>O projeto já inclui as duas referências fornecidas: GeoJSON SIGEL/ANEEL e CSV tarifário compactado. A etapa gera o mapa WGS84, catálogo de distribuidoras e TE+TUSD volumétricas de <b>Tarifa de Aplicação</b>.</p>
+  <form method="post" action="{% url 'studio:run_stage' tariff_stage.id %}">{% csrf_token %}<button class="button primary">Preparar mapa e tarifas</button></form>
+  <div class="method-box"><b>Depois disso:</b> Produto → clique em uma área real → CNPJ → perfil tarifário vigente → tarifa-base.</div>
+</section>
+</div>
+
+<section class="page-header compact-header"><div><p class="eyebrow">Data Explorer</p><h2>Veja uma amostra dos artefatos</h2><p>Prévia, schema, ausências e estatísticas. O explorer nunca altera os arquivos.</p></div></section>
+<div class="data-layout">
+<aside class="dataset-menu">{% for a in artifacts %}<a class="{% if a.key == selected_key %}selected{% endif %} {% if not a.exists %}missing{% endif %}" href="?dataset={{ a.key }}&rows={{ rows }}"><span>{% if a.exists %}●{% else %}○{% endif %}</span><span><b>{{ a.label }}</b><small>{{ a.category }} · {% if a.exists %}{{ a.rows|default:'arquivo' }}{% else %}não gerado{% endif %}</small></span></a>{% endfor %}</aside>
+<section class="dataset-content">
+  {% if preview.exists %}
+  <div class="panel"><div class="panel-head"><div><p class="eyebrow">{{ preview.spec.stage }}</p><h2>{{ preview.spec.label }}</h2><p>{{ preview.spec.description }}</p></div><code>{{ preview.spec.path }}</code></div>{% if preview.row_count %}<div class="mini-kpis"><span><b>{{ preview.row_count }}</b> linhas</span><span><b>{{ preview.column_count }}</b> colunas</span></div>{% endif %}</div>
+  {% if preview.chart %}<section class="panel"><h2>Amostra temporal</h2><div id="dataset-chart" class="chart"></div><small class="help-text">Últimas 168 observações da primeira variável numérica relevante.</small></section>{% endif %}
+  {% if preview.headers %}<section class="panel"><div class="panel-head"><h2>Prévia do dataset</h2><form method="get"><input type="hidden" name="dataset" value="{{ selected_key }}"><select name="rows" onchange="this.form.submit()"><option {% if rows == '15' %}selected{% endif %}>15</option><option {% if rows == '30' %}selected{% endif %}>30</option><option {% if rows == '50' %}selected{% endif %}>50</option><option {% if rows == '100' %}selected{% endif %}>100</option></select></form></div><div class="table-wrap"><table><thead><tr>{% for h in preview.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>{% for row in preview.table %}<tr>{% for v in row %}<td>{{ v|default_if_none:'∅' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></section>{% endif %}
+  {% if preview.columns %}<section class="panel"><h2>Schema e qualidade</h2><div class="schema-grid">{% for c in preview.columns %}<div><b>{{ c.name }}</b><span>{{ c.dtype }}</span><small>{{ c.missing }} ausências</small></div>{% endfor %}</div></section>{% endif %}
+  {% if preview.text %}<section class="panel"><pre class="terminal">{{ preview.text }}</pre></section>{% endif %}
+  {% else %}<div class="panel empty-state"><h2>Artefato ainda não existe</h2><p>{{ preview.spec.description }}</p></div>{% endif %}
+</section></div>
+{% if preview.chart %}{{ preview.chart|json_script:'dataset-chart-data' }}{% endif %}
+{% endblock %}
+{% block scripts %}{% if preview.chart %}<script>PredictaCharts.lineFromJson('dataset-chart','dataset-chart-data',{percent:false});</script>{% endif %}{% endblock %}

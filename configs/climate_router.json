@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "historical_mode": "auto",
+  "historical_backend_in_auto": "era5_land_arco",
+  "operational_forecast_backend": "open_meteo_ecmwf",
+  "fallback_http_codes": [429],
+  "fallback_on_any_openmeteo_error": false,
+  "notes": [
+    "AUTO não consome Open-Meteo Archive: histórico vai direto ao ARCO.",
+    "OPENMETEO_WITH_ARCO_FALLBACK existe apenas para compatibilidade com runners antigos.",
+    "Após fallback ARCO bem-sucedido o processo retorna exit code 0 para a automação continuar."
+  ]
+}

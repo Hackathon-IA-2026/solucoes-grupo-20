@@ -1,0 +1,63 @@
+climate:
+  source_historical: ERA5-Land
+  source_historical_access_smoke: Open-Meteo Historical API
+  source_operational_forecast: null
+  spatial_resolution_deg: 0.1
+  temporal_resolution: 1h
+  timezone: UTC
+  openmeteo:
+    archive_url: https://archive-api.open-meteo.com/v1/archive
+    model: era5_land
+    timezone_request: GMT
+    small_scope_only: true
+  variables_minimum:
+  - temperature_2m
+  - dewpoint_2m
+  - precipitation
+  - wind_speed_10m
+  - solar_radiation
+  aliases_openmeteo:
+    dewpoint_2m: dew_point_2m
+    solar_radiation: shortwave_radiation
+  canonical_units:
+    temperature_2m: degC
+    dewpoint_2m: degC
+    precipitation: mm
+    wind_speed_10m: m/s
+    solar_radiation: W/m2
+  baseline:
+    version: '1.0'
+    scientific_status: operational_baseline_not_official_climatological_normal
+    complete_previous_years: 10
+    include_target_year: false
+    grouping:
+    - cell_id
+    - variable
+    - hour_of_day_utc
+    - day_of_year_window
+    seasonal_window_days: 15
+    statistics:
+    - median
+    - p01
+    - p05
+    - p10
+    - p25
+    - p75
+    - p90
+    - p95
+    - p99
+    - iqr
+    - sample_count
+    percentile_method: empirical
+    season_calendar: canonical_leap_366_month_day_aligned
+    quantile_method: linear
+    coverage_warning_threshold: 0.8
+    small_scope_max_cells: 25
+    target_scoring:
+      anomaly_reference: median
+      robust_z_scale: IQR/1.349
+      robust_z_epsilon: 1.0e-06
+      percentile_method: weak_empirical_cdf_leq
+  backtest_modes:
+  - PERFECT_WEATHER_BACKTEST
+  - OPERATIONAL_FORECAST

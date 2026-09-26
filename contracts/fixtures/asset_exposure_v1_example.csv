@@ -1,0 +1,2 @@
+schema_version,run_id,interval_start_utc,asset_id,asset_type,cell_id,geometry_quality,incident_type,incident_score,exposure_reason,generation_type,capacity_mw,hub_score,voltage_kv,transformer_mva,quality_flags
+asset_exposure_v1,fixture-20260919T000000Z,2026-09-19T00:00:00+00:00,PLANT_FIXTURE_001,GENERATION_PLANT,g01_0767_1301,A,HEAT,0.72,asset cell coincides with extreme heat grid cell,HIDROELÉTRICA,350.0,,,,"[""SYNTHETIC_FIXTURE""]"

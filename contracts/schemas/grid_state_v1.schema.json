@@ -1,0 +1,252 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "grid_state_v1",
+      "pattern": "^grid_state_v1$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "interval_start_utc": {
+      "format": "date-time",
+      "title": "Interval Start Utc",
+      "type": "string"
+    },
+    "cell_id": {
+      "minLength": 1,
+      "title": "Cell Id",
+      "type": "string"
+    },
+    "lat_center": {
+      "maximum": 90,
+      "minimum": -90,
+      "title": "Lat Center",
+      "type": "number"
+    },
+    "lon_center": {
+      "maximum": 180,
+      "minimum": -180,
+      "title": "Lon Center",
+      "type": "number"
+    },
+    "temperature_2m": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Temperature 2M"
+    },
+    "temperature_anomaly": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Temperature Anomaly"
+    },
+    "temperature_percentile": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Temperature Percentile"
+    },
+    "precipitation": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Precipitation"
+    },
+    "precipitation_percentile": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Precipitation Percentile"
+    },
+    "wind_speed": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wind Speed"
+    },
+    "wind_percentile": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wind Percentile"
+    },
+    "solar_radiation": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Solar Radiation"
+    },
+    "solar_percentile": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Solar Percentile"
+    },
+    "heat_incident_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Heat Incident Score",
+      "type": "number"
+    },
+    "cold_incident_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Cold Incident Score",
+      "type": "number"
+    },
+    "rain_incident_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Rain Incident Score",
+      "type": "number"
+    },
+    "wind_incident_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Wind Incident Score",
+      "type": "number"
+    },
+    "solar_deficit_score": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Solar Deficit Score",
+      "type": "number"
+    },
+    "capacity_by_type_json": {
+      "title": "Capacity By Type Json",
+      "type": "string"
+    },
+    "generation_by_type_json": {
+      "title": "Generation By Type Json",
+      "type": "string"
+    },
+    "substation_count": {
+      "minimum": 0,
+      "title": "Substation Count",
+      "type": "integer"
+    },
+    "hub_max": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hub Max"
+    },
+    "transmission_exposure": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transmission Exposure"
+    },
+    "data_quality": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Data Quality",
+      "type": "number"
+    }
+  },
+  "required": [
+    "run_id",
+    "interval_start_utc",
+    "cell_id",
+    "lat_center",
+    "lon_center",
+    "heat_incident_score",
+    "cold_incident_score",
+    "rain_incident_score",
+    "wind_incident_score",
+    "solar_deficit_score",
+    "capacity_by_type_json",
+    "generation_by_type_json",
+    "substation_count",
+    "data_quality"
+  ],
+  "title": "GridStateV1",
+  "type": "object"
+}

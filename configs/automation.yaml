@@ -1,0 +1,12 @@
+version: '1.0'
+regions: ['N','NE','SE/CO','S']
+algorithms: ['ridge','xgboost']
+experiment: 'E3'
+calendar_timezone: 'America/Sao_Paulo'
+operational:
+  horizon_hours: 24
+  max_load_staleness_hours: 6
+  weather_source: 'open-meteo forecast'
+  weather_mode: 'OPERATIONAL_FORECAST'
+  model_selection_metric: 'WAPE'
+spatial_method: 'MVP_REPRESENTATIVE_POINTS_UNIFORM'

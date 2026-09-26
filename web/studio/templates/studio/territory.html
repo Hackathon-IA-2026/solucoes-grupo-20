@@ -1,0 +1,182 @@
+{% extends 'studio/base.html' %}
+{% block title %}Clima & geração · Predicta{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div>
+    <p class="eyebrow">2.5 · Clima & geração</p>
+    <h1>Eventos climáticos, localização de usinas e resposta de demanda</h1>
+    <p>Esta visão conecta <b>onde estão as usinas</b> com <b>onde os eventos climáticos aparecem</b> e resume como isso se relaciona com carga e geração no subsistema. É uma camada explicativa do MVP: ajuda a entender <i>por que</i> o sinal sistêmico pode subir ou cair.</p>
+  </div>
+  <div class="warning-box narrow"><b>Leitura correta:</b> o mapa mostra um proxy regional. Os pontos climáticos são representativos; a proximidade planta-evento é uma aproximação espacial útil para o MVP, não um laudo operacional do ONS.</div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><div><h2>Filtros</h2><p>Escolha o subsistema e a data local em que você quer inspecionar o território.</p></div></div>
+  <form method="get" class="two-fields territory-filter-form">
+    <label class="field"><span>Subsistema</span><select name="region">
+      {% for r in regions %}<option value="{{ r.id }}" {% if r.id == selected_region %}selected{% endif %}>{{ r.id }}</option>{% endfor %}
+    </select><small>O mapa é recortado para as concessões associadas ao subsistema do MVP.</small></label>
+    <label class="field"><span>Data local do evento ({{ territory.subsystem_id }})</span><select name="event_date">
+      {% for d in territory.available_dates %}<option value="{{ d|date:'Y-m-d' }}" {% if d|date:'Y-m-d' == selected_event_date %}selected{% endif %}>{{ d|date:'d/m/Y' }}</option>{% empty %}<option value="">Nenhuma data E3 disponível</option>{% endfor %}
+    </select><small>A data usa calendário de São Paulo para não misturar leitura operacional e UTC.</small></label>
+    <div class="territory-filter-actions"><button class="button primary" type="submit">Atualizar visão territorial</button></div>
+  </form>
+</section>
+
+<section class="result-hero territory-hero">
+  <div><span>Usinas mapeadas</span><strong>{{ territory.summary.plant_count }}</strong><small>catálogo georreferenciado do MVP</small></div>
+  <div><span>Pontos com evento ativo</span><strong>{{ territory.summary.active_event_points }}</strong><small>na data {{ selected_event_date|default:'—' }}</small></div>
+  <div><span>Usinas próximas de evento</span><strong>{{ territory.summary.plants_near_events }}</strong><small>até ~300 km do ponto representativo</small></div>
+  <div><span>Capacidade próxima de evento</span><strong>{% if territory.summary.capacity_near_events_mw %}{{ territory.summary.capacity_near_events_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>proxy de exposição regional</small></div>
+  <div><span>Carga média do dia</span><strong>{% if territory.summary.avg_load_mw %}{{ territory.summary.avg_load_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>pico {% if territory.summary.peak_load_mw %}{{ territory.summary.peak_load_mw|floatformat:0 }} MW{% else %}—{% endif %}</small></div>
+  <div><span>Geração média do dia</span><strong>{% if territory.summary.avg_generation_mw %}{{ territory.summary.avg_generation_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>contexto observado no subsistema</small></div>
+</section>
+
+<div class="product-layout real-map-layout territory-layout">
+  <section class="panel map-panel real-map-panel">
+    <div class="panel-head"><div><h2>Mapa real: usinas × eventos</h2><p>Círculos escuros = usinas. Círculos coloridos = pontos climáticos representativos. Usinas em vermelho estão próximas de algum evento regional na data selecionada.</p></div></div>
+    <div class="real-map-wrap territory-map-wrap"><svg id="territory-map" class="concession-map" viewBox="0 0 920 720" role="img" aria-label="Mapa territorial com usinas e eventos climáticos"></svg><div id="territory-tooltip" class="map-tooltip" hidden></div></div>
+    <div class="map-key territory-key">
+      <span><i class="dot plant"></i>Usina</span>
+      <span><i class="dot exposed"></i>Usina próxima de evento</span>
+      <span><i class="dot heat"></i>Calor</span>
+      <span><i class="dot rain"></i>Chuva</span>
+      <span><i class="dot wind"></i>Vento</span>
+      <span><i class="dot storm"></i>Tempestade</span>
+      <small>O fundo usa o mapa real de concessões como referência territorial do MVP.</small>
+    </div>
+  </section>
+
+  <section class="panel product-form-panel">
+    <div class="panel-head"><div><h2>Como ler esta tela</h2><p>Ela foi desenhada para públicos diferentes: negócio, dados e operação.</p></div></div>
+    <div class="method-box">
+      <ol>
+        <li><b>Localização:</b> a tela parte da posição geográfica das usinas no subsistema.</li>
+        <li><b>Evento climático:</b> a data escolhida mostra onde há calor, chuva, vento ou tempestade nos pontos representativos.</li>
+        <li><b>Exposição:</b> estimamos quais usinas ficam próximas dos pontos com evento.</li>
+        <li><b>Relação com o sistema:</b> abaixo você vê correlações e variações médias de carga/geração em horas com evento.</li>
+      </ol>
+    </div>
+    <div class="explain-grid small-grid">
+      {% for note in territory.notes %}
+        <div><p>{{ note }}</p></div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head"><div><h2>Dia selecionado · demanda e geração</h2><p>Curva local em horário de São Paulo. Ajuda a explicar o comportamento do sistema ao longo das 24 horas.</p></div></div>
+    {% if territory.timeline %}<div id="territory-demand-chart" class="chart"></div>{% else %}<div class="empty-state">Ainda não há série horária suficiente para o dia selecionado.</div>{% endif %}
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2>Dia selecionado · intensidade climática</h2><p>Frações próximas de 1 indicam maior presença do evento entre os pontos representativos do subsistema.</p></div></div>
+    {% if territory.timeline %}<div id="territory-climate-chart" class="chart"></div>{% else %}<div class="empty-state">Contexto climático diário indisponível.</div>{% endif %}
+  </section>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head"><div><h2>Correlações principais</h2><p>Resumo exploratório de relação entre clima, geração e demanda no histórico disponível.</p></div></div>
+    {% if territory.correlations %}
+    <div class="stack-list">
+      {% for c in territory.correlations %}
+      <div class="list-card">
+        <div><b>{{ c.title }}</b><small>{{ c.explanation }}</small></div>
+        <div class="metric-pill {% if c.value >= 0 %}positive{% else %}negative{% endif %}">r = {{ c.value|floatformat:2 }}</div>
+        <small>{{ c.direction|title }} · intensidade {{ c.strength }}</small>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-state">Sem colunas suficientes para calcular correlações.</div>{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><h2>Diferença média em horas com evento</h2><p>Compara horas com evento vs horas sem aquele evento, no histórico disponível.</p></div></div>
+    {% if territory.event_impacts %}
+    <div class="stack-list">
+      {% for i in territory.event_impacts %}
+      <div class="list-card impact-card">
+        <div><b>{{ i.label }}</b><small>{{ i.hours }} horas com ocorrência</small></div>
+        <div class="impact-values">
+          <span>Carga {% if i.load_delta_pct is not None %}{{ i.load_delta_pct|floatformat:1 }}%{% else %}—{% endif %}</span>
+          <span>Geração total {% if i.generation_delta_pct is not None %}{{ i.generation_delta_pct|floatformat:1 }}%{% else %}—{% endif %}</span>
+          <span>Eólica {% if i.wind_delta_pct is not None %}{{ i.wind_delta_pct|floatformat:1 }}%{% else %}—{% endif %}</span>
+          <span>Solar {% if i.solar_delta_pct is not None %}{{ i.solar_delta_pct|floatformat:1 }}%{% else %}—{% endif %}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-state">Ainda não foi possível comparar horas com e sem evento.</div>{% endif %}
+  </section>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel-head"><div><h2>Usinas de maior relevância</h2><p>Primeiras usinas do catálogo no subsistema, destacando as próximas dos eventos da data selecionada.</p></div></div>
+    {% if territory.top_plants %}
+    <div class="table-wrap">
+      <table class="basic-table compact-table">
+        <thead><tr><th>Usina</th><th>Fonte</th><th>UF</th><th>Capacidade</th><th>Geração média</th><th>Evento próximo</th></tr></thead>
+        <tbody>
+          {% for p in territory.top_plants %}
+          <tr>
+            <td>{{ p.plant_name }}</td>
+            <td>{{ p.source_name }}</td>
+            <td>{{ p.uf }}</td>
+            <td>{% if p.capacity_mw %}{{ p.capacity_mw|floatformat:0 }} MW{% else %}—{% endif %}</td>
+            <td>{% if p.generation_avg_mw %}{{ p.generation_avg_mw|floatformat:0 }} MW{% else %}—{% endif %}</td>
+            <td>{% if p.near_event %}{{ p.nearest_event_label }} · {{ p.nearest_event_point }}{% if p.distance_to_event_km %} ({{ p.distance_to_event_km|floatformat:0 }} km){% endif %}{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state">Sem catálogo de usinas disponível.</div>{% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><h2>Matriz por fonte</h2><p>Mostra peso da capacidade no subsistema e quanto dela aparece próxima dos eventos.</p></div></div>
+    {% if territory.source_mix %}
+    <div class="table-wrap">
+      <table class="basic-table compact-table">
+        <thead><tr><th>Fonte</th><th>Usinas</th><th>Capacidade</th><th>Geração média</th><th>Capacidade próxima de evento</th></tr></thead>
+        <tbody>
+          {% for s in territory.source_mix %}
+          <tr>
+            <td>{{ s.source_name }}</td>
+            <td>{{ s.plant_count }}</td>
+            <td>{{ s.capacity_mw|floatformat:0 }} MW</td>
+            <td>{{ s.generation_avg_mw|floatformat:0 }} MW</td>
+            <td>{{ s.capacity_near_event_mw|floatformat:0 }} MW</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty-state">Sem agregados por fonte.</div>{% endif %}
+  </section>
+</div>
+
+{{ territory.timeline|json_script:'territory-timeline-data' }}
+{{ territory.map_payload|json_script:'territory-map-data' }}
+{% endblock %}
+{% block scripts %}
+<script>
+const territoryTimeline = JSON.parse(document.getElementById('territory-timeline-data').textContent || '[]');
+const territoryMap = JSON.parse(document.getElementById('territory-map-data').textContent || '{}');
+Predicta.bindTerritoryMap('territory-map', territoryMap, 'territory-tooltip');
+if(territoryTimeline.length){
+  PredictaCharts.multiLine('territory-demand-chart', territoryTimeline.map(x=>x.time), [
+    {name:'Demanda (MW)', values: territoryTimeline.map(x=>x.load_mw)},
+    {name:'Geração total (MW)', values: territoryTimeline.map(x=>x.generation_total_mw)}
+  ], {});
+  PredictaCharts.multiLine('territory-climate-chart', territoryTimeline.map(x=>x.time), [
+    {name:'Calor', values: territoryTimeline.map(x=>x.incident_heat_fraction)},
+    {name:'Chuva', values: territoryTimeline.map(x=>x.incident_rain_fraction)},
+    {name:'Vento', values: territoryTimeline.map(x=>x.incident_wind_fraction)}
+  ], {minZero:true});
+}
+</script>
+{% endblock %}

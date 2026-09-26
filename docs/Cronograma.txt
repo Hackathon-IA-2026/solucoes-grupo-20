@@ -1,0 +1,16 @@
+8 a 10 de setembro • Online
+Treinamento
+Preparação para o Hackathon
+Encontros online para apresentar a dinâmica do evento, os desafios, as bases de dados, as ferramentas disponíveis e os critérios de avaliação.
+11 a 13 de setembro • Online
+Ideathon
+Formação das equipes e desenvolvimento da ideia
+Durante o Ideathon, os participantes formarão equipes compostas por três desenvolvedores, um Scrum Master / Gerente de Projeto e um especialista temático. Cada equipe deverá definir o problema, estruturar a proposta de solução e planejar o desenvolvimento.
+14 a 24 de setembro
+Desenvolvimento interno
+Desenvolvimento interno
+Após o Ideathon, as equipes trabalharão no aprofundamento da ideia, na exploração dos dados e no desenvolvimento da primeira versão do protótipo.
+25 a 27 de setembro • Presencial
+Hackathon presencial
+Finalização e apresentação
+Durante o Hackathon presencial, as equipes finalizarão e aprimorarão suas soluções, receberão mentorias e apresentarão os projetos para a banca avaliadora.

@@ -1,0 +1,47 @@
+{% extends 'studio/base.html' %}
+{% load date_display %}
+{% block title %}Pipeline · Predicta{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div><p class="eyebrow">Pipeline executável</p><h1>Entenda e execute cada etapa</h1><p>As etapas abaixo chamam os mesmos scripts versionados usados no terminal. O objetivo é tornar a ciência auditável para públicos técnicos e não técnicos.</p></div>
+  <div class="info-callout"><b>Como ler:</b> “Pronto” significa que as entradas existem; “Concluído” significa que o principal artefato de saída foi encontrado; “Bloqueado” indica dependência ausente.</div>
+</section>
+
+{% for section in sections %}
+<section class="pipeline-section">
+  <h2>{{ section.name }}</h2>
+  <div class="stage-grid">
+  {% for item in section.stages %}
+    <article class="stage-card">
+      <div class="stage-top"><span class="badge stage-{{ item.status|lower }}">{{ item.status }}</span><h3>{{ item.stage.title }}</h3></div>
+      <p class="stage-summary">{{ item.stage.summary }}</p>
+      <details><summary>O que acontece nesta etapa?</summary><p>{{ item.stage.explanation }}</p><p><b>Por que existe:</b> {{ item.stage.why }}</p></details>
+      {% if item.required %}<div class="deps"><b>Entradas</b>{% for d in item.required %}<span class="dep {% if d.exists %}ok{% endif %}">{% if d.exists %}✓{% else %}×{% endif %} {{ d.label }}</span>{% endfor %}</div>{% endif %}
+      {% if item.outputs %}<div class="deps"><b>Saídas</b>{% for d in item.outputs %}<span class="dep {% if d.exists %}ok{% endif %}">{% if d.exists %}✓{% else %}○{% endif %} {{ d.label }}</span>{% endfor %}</div>{% endif %}
+      <form class="stage-form" method="post" action="{% url 'studio:run_stage' item.stage.id %}">
+        {% csrf_token %}
+        {% for p in item.stage.params %}
+          <label class="field {% if p.kind == 'checkbox' %}check-field{% endif %}">
+            {% if p.kind == 'checkbox' %}
+              <input type="checkbox" name="{{ p.name }}" value="1" {% if p.default == '1' %}checked{% endif %}> <span>{{ p.label }}</span>
+            {% else %}
+              <span>{{ p.label }}</span>
+              {% if p.kind == 'select' %}<select name="{{ p.name }}">{% for value,label in p.choices %}<option value="{{ value }}" {% if value == p.default %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+              {% else %}<input type="{{ p.kind }}" name="{{ p.name }}" value="{{ p.default }}" {% if p.required %}required{% endif %}>{% endif %}
+              {% if p.help %}<small>{{ p.help }}</small>{% endif %}
+            {% endif %}
+          </label>
+        {% endfor %}
+        <button class="button primary" type="submit" {% if item.status == 'BLOCKED' or not pipeline_execution_enabled %}disabled{% endif %}>Executar etapa</button>
+      </form>
+    </article>
+  {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<section class="panel">
+  <div class="panel-head"><h2>Últimas execuções pela web</h2></div>
+  {% if recent_runs %}<div class="run-list">{% for run in recent_runs %}<a href="{% url 'studio:run_detail' run.id %}" class="run-row"><span class="badge status-{{ run.status|lower }}">{{ run.get_status_display }}</span><b>{{ run.stage_label }}</b><span>{% human_date run.created_at %}</span></a>{% endfor %}</div>{% else %}<div class="empty-state">Nenhuma execução ainda.</div>{% endif %}
+</section>
+{% endblock %}

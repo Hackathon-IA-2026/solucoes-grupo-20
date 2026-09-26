@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "ZoneType": {
+      "enum": [
+        "SUBSYSTEM",
+        "SIN",
+        "DISTRIBUTOR"
+      ],
+      "title": "ZoneType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "tariff_v1",
+      "pattern": "^tariff_v1$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "interval_start_utc": {
+      "format": "date-time",
+      "title": "Interval Start Utc",
+      "type": "string"
+    },
+    "distributor_id": {
+      "minLength": 1,
+      "title": "Distributor Id",
+      "type": "string"
+    },
+    "tariff_profile_id": {
+      "minLength": 1,
+      "title": "Tariff Profile Id",
+      "type": "string"
+    },
+    "zone_type": {
+      "$ref": "#/$defs/ZoneType"
+    },
+    "zone_id": {
+      "minLength": 1,
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "base_te_rs_kwh": {
+      "minimum": 0,
+      "title": "Base Te Rs Kwh",
+      "type": "number"
+    },
+    "base_tusd_rs_kwh": {
+      "minimum": 0,
+      "title": "Base Tusd Rs Kwh",
+      "type": "number"
+    },
+    "base_total_rs_kwh": {
+      "minimum": 0,
+      "title": "Base Total Rs Kwh",
+      "type": "number"
+    },
+    "demand_pressure": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Demand Pressure",
+      "type": "number"
+    },
+    "supply_pressure": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Supply Pressure"
+    },
+    "economic_signal": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": -1,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Economic Signal"
+    },
+    "raw_multiplier": {
+      "exclusiveMinimum": 0,
+      "title": "Raw Multiplier",
+      "type": "number"
+    },
+    "final_multiplier": {
+      "exclusiveMinimum": 0,
+      "title": "Final Multiplier",
+      "type": "number"
+    },
+    "dynamic_tariff_rs_kwh": {
+      "minimum": 0,
+      "title": "Dynamic Tariff Rs Kwh",
+      "type": "number"
+    },
+    "floor_applied": {
+      "title": "Floor Applied",
+      "type": "boolean"
+    },
+    "cap_applied": {
+      "title": "Cap Applied",
+      "type": "boolean"
+    },
+    "ramp_applied": {
+      "title": "Ramp Applied",
+      "type": "boolean"
+    },
+    "neutrality_adjustment": {
+      "title": "Neutrality Adjustment",
+      "type": "number"
+    },
+    "fallback_applied": {
+      "title": "Fallback Applied",
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "title": "Reason Codes",
+      "type": "string"
+    },
+    "quality_flags": {
+      "title": "Quality Flags",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "interval_start_utc",
+    "distributor_id",
+    "tariff_profile_id",
+    "zone_type",
+    "zone_id",
+    "base_te_rs_kwh",
+    "base_tusd_rs_kwh",
+    "base_total_rs_kwh",
+    "demand_pressure",
+    "raw_multiplier",
+    "final_multiplier",
+    "dynamic_tariff_rs_kwh",
+    "floor_applied",
+    "cap_applied",
+    "ramp_applied",
+    "neutrality_adjustment",
+    "fallback_applied",
+    "reason_codes",
+    "quality_flags"
+  ],
+  "title": "TariffV1",
+  "type": "object"
+}

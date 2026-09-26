@@ -1,0 +1,76 @@
+{
+  "status": "FAILED",
+  "started_at_utc": "2026-09-24T00:42:58.883200+00:00",
+  "config": {
+    "start_year": 2023,
+    "end_year": 2026,
+    "history_start": null,
+    "history_end": null,
+    "test_hours": 720,
+    "calibration_hours": 720,
+    "alpha": 1.0,
+    "n_estimators": 350,
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9,
+    "climate_grid_mode": "adaptive",
+    "climate_stride_cells": 20,
+    "climate_batch_size": 6,
+    "climate_daily_batch_size": 24,
+    "climate_archive_url": "",
+    "climate_history_mode": "local-first",
+    "climate_historical_backend": "auto",
+    "climate_store_root": "data/climate_store",
+    "climate_request_delay": 2.0,
+    "climate_max_retries": 10,
+    "climate_backoff": 10.0,
+    "climate_cooldown_after_429": 3,
+    "climate_cooldown_seconds": 90.0,
+    "climate_timeout": 120,
+    "climate_defer_wait_seconds": 900.0,
+    "climate_defer_cycles": 8,
+    "skip_tests": false,
+    "skip_operational": false,
+    "operational_issue": "auto",
+    "max_load_staleness_hours": 3.0,
+    "report": "outputs/reports/full_automation.json"
+  },
+  "regions": {},
+  "steps": [
+    {
+      "label": "Gate 0 · testes científicos",
+      "command": [
+        "/home/raul/Projetos/hackathon-ia-2026/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "return_code": 2,
+      "seconds": 4.67
+    }
+  ],
+  "climate_policy": {
+    "target_years": "derived automatically from ONS/training range",
+    "rolling_baseline": "Y-10..Y-1 for every target year",
+    "grid_resolution_deg": 0.1,
+    "grid_mode": "adaptive",
+    "rate_limit": {
+      "batch_size_hourly": 6,
+      "batch_size_daily": 24,
+      "request_delay_seconds": 2.0,
+      "max_retries": 10,
+      "base_backoff_seconds": 10.0,
+      "cooldown_after_429": 3,
+      "cooldown_seconds": 90.0
+    },
+    "climate_store": "data/climate_store",
+    "history_mode": "local-first",
+    "historical_backend": "auto",
+    "historical_source_policy": "AUTO/ARCO: ERA5-Land ARCO 0.1° for core variables + ERA5 ARCO 0.25° for gust; Open-Meteo reserved for operational forecast",
+    "annual_cache": "persistent local store; selected backend only fills missing ranges",
+    "resume": "checkpoint per batch + point/date-range immutable cache"
+  },
+  "error": "Gate 0 · testes científicos failed with code 2",
+  "finished_at_utc": "2026-09-24T00:43:03.549555+00:00"
+}

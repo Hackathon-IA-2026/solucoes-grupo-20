@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "historical_backend": "era5_land_arco",
+  "historical_resolution_deg": 0.1,
+  "historical_frequency": "hourly",
+  "baseline_years": 10,
+  "baseline_rule": "target_year_minus_10_through_target_year_minus_1",
+  "operational_forecast_backend": "open_meteo_or_ecmwf_forecast",
+  "arco_groups": [
+    "temperature",
+    "precipitation",
+    "wind",
+    "radiation"
+  ],
+  "canonical_columns": [
+    "temperature_2m_c",
+    "dewpoint_2m_c",
+    "precipitation_mm",
+    "wind_u_10m_ms",
+    "wind_v_10m_ms",
+    "wind_speed_10m_ms",
+    "solar_radiation_j_m2",
+    "solar_radiation_w_m2_avg"
+  ],
+  "wind_gust_policy": "not_available_in_era5_land_arco_subset_keep_as_optional_secondary_source_do_not_substitute_silently",
+  "parquet_compression": "zstd",
+  "default_point_batch_size": 32
+}

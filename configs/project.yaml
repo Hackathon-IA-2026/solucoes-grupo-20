@@ -1,0 +1,28 @@
+project:
+  name: predicta
+  scope: BRASIL_SIN
+  timezone_internal: UTC
+  contract_resolution: 1h
+  forecast_horizon_hours: 24
+
+spatial_grid:
+  crs: EPSG:4326
+  latitude_step_deg: 0.1
+  longitude_step_deg: 0.1
+  cell_id_origin_lat: -90.0
+  cell_id_origin_lon: -180.0
+  cell_id_prefix: g01
+  mask_reference: assets/geospatial/brazil_naturalearth_lowres.geojson
+  mask_note: bootstrap_only_replace_with_official_ibge_before_production
+
+storage:
+  raw_immutable: true
+  tabular_format: parquet
+  geometry_format: geoparquet
+  partition_time: [year, month]
+
+contracts:
+  grid_state: grid_state_v1
+  asset_exposure: asset_exposure_v1
+  system_signal: system_signal_v1
+  tariff: tariff_v1

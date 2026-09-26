@@ -1,0 +1,2 @@
+distributor_id,tariff_profile_id,tariff_post,base_te_rs_kwh,base_tusd_rs_kwh,valid_from,valid_to,source
+DIST_EXAMPLE_SECO,B1_CONVENTIONAL_FIXTURE,UNIQUE,0.31,0.44,2026-01-01,2026-12-31,synthetic_fixture_not_regulatory
