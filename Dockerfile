@@ -15,8 +15,7 @@ WORKDIR /build
 COPY requirements.txt pyproject.toml ./
 RUN sed '/^-e file:/d' requirements.txt > requirements-docker.txt \
 	&& pip install --upgrade pip \
-	&& pip install -r requirements-docker.txt \
-	&& pip install gunicorn
+	&& pip install -r requirements-docker.txt
 
 COPY . .
 RUN pip install --no-deps .
