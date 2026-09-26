@@ -1,0 +1,8 @@
+Predicta v1.3.1 validation
+66 passed, 2 skipped
+Skipped tests require pyarrow, unavailable in packaging environment.
+Hotfix covered:
+- ERA5-Land remains pinned for 10-year temperature baseline.
+- Target-year historical daily context omits models, matching supplied snapshot historical.py.
+- wind_gusts_10m_max remains the exact wind event metric.
+- dependent scripts fail with actionable precondition messages.

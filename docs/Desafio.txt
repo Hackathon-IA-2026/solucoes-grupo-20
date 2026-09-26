@@ -1,0 +1,33 @@
+Transição Energética
+Essa transformação vai muito além da construção de novos parques solares e eólicos. À medida que as fontes renováveis ganham espaço, consumidores passam a gerar sua própria energia e milhões de novos dados são produzidos diariamente.
+
+Operar um sistema com essas características exige previsões mais precisas, decisões em tempo real e ferramentas capazes de transformar grandes volumes de dados em inteligência para a operação.
+
+Não existe transição energética sem inovação. Para tornar o sistema elétrico mais eficiente, resiliente e sustentável, é necessário enfrentar problemas que vão desde a previsão do consumo até o melhor aproveitamento da energia renovável disponível.
+
+Desafio 1 — Constrained-Off (Curtailment)
+Imagine uma usina eólica com vento suficiente para gerar energia ou uma usina solar operando em um dia de céu aberto. Mesmo assim, ambas precisam reduzir ou interromper sua geração.
+
+Esse é um exemplo de constrained-off, uma forma de curtailment em que a produção de energia renovável é limitada por restrições do sistema elétrico, como limitações na rede de transmissão ou condições necessárias para garantir a segurança da operação.
+
+Além de representar o desperdício de energia limpa disponível, esse fenômeno gera impactos econômicos e operacionais e se tornou um dos principais desafios associados à expansão das fontes renováveis.
+
+O Operador Nacional do Sistema Elétrico — ONS — disponibiliza registros históricos desses eventos em seu portal de dados abertos, detalhados por usina, período e categoria.
+
+Com essas informações, os participantes poderão identificar padrões, compreender as condições que levam aos cortes e desenvolver soluções capazes de apoiar a operação do sistema e reduzir seus impactos.
+
+Desafio 2 — Previsão de Demanda Energética
+Saber quanta energia será consumida nas próximas horas está longe de ser uma tarefa simples. A demanda varia ao longo do dia e é influenciada por fatores como temperatura, condições climáticas, atividade econômica e hábitos de consumo.
+
+O operador do sistema precisa equilibrar continuamente a geração e o consumo de energia. Quando a previsão falha, podem surgir custos operacionais mais elevados, uso ineficiente da infraestrutura e maior dificuldade para manter a operação de forma segura e eficiente.
+
+Nesse contexto, dados climáticos desempenham um papel fundamental. O ERA5, conjunto de dados atmosféricos produzido pelo Centro Europeu de Previsões Meteorológicas de Médio Prazo — ECMWF — reúne décadas de informações meteorológicas com cobertura global e resolução horária.
+
+Combinado aos dados do sistema elétrico brasileiro, o ERA5 permite desenvolver modelos capazes de prever a demanda com maior precisão e apoiar decisões operacionais.
+
+O que esperamos das soluções
+Os exemplos apresentados representam apenas uma parte dos desafios associados à transição energética. Durante o hackathon, os participantes terão a oportunidade de trabalhar com dados reais, explorar problemas atuais do setor e desenvolver protótipos que contribuam para um sistema elétrico mais eficiente, resiliente e sustentável.
+
+A expectativa não é construir uma solução definitiva em poucos dias, mas desenvolver modelos, análises e ferramentas que demonstrem potencial de aplicação prática.
+
+As soluções devem mostrar como dados podem ser transformados em inteligência e apoiar decisões em um dos setores mais estratégicos do país.

@@ -1,0 +1,16 @@
+Predicta Web Studio v1.12.0 build validation
+============================================
+
+Validated in packaging environment:
+- python -m compileall motor_sin scripts web tests: PASS
+- pytest -q: 97 passed, 2 skipped
+- skipped tests require pyarrow, which is not installed in the packaging environment
+- node --check web/studio/static/studio/js/app.js: PASS
+- scripts 53/47/55/57 CLI --help: PASS
+- Climate Store incremental-gap unit tests: PASS (5 tests)
+
+Django runtime note:
+- manage.py check could not run in the packaging environment because Django is not installed here.
+- Run locally after pip install -e ".[dev,web,ml]":
+  python manage.py check
+  python manage.py test web.studio

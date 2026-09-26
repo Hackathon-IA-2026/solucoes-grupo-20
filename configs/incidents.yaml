@@ -1,0 +1,59 @@
+methodology:
+  version: "1.0"
+  name: predicta_hourly_grid_weather_incidents
+  scientific_status: operational_baseline_not_official_climatological_normal
+  temporal_resolution: 1h
+  spatial_resolution_deg: 0.1
+  note: >-
+    Regras adaptadas do snapshot OpenMeteo. O snapshot operava por localidade/dia;
+    aqui o evento é calculado por célula/hora e por percentis regionais do baseline.
+
+rules:
+  extreme_heat:
+    enabled: true
+    metric: temperature_2m
+    tail: upper
+    percentile_threshold: 0.95
+    severe_percentile_threshold: 0.99
+
+  extreme_cold:
+    enabled: true
+    metric: temperature_2m
+    tail: lower
+    percentile_threshold: 0.05
+    severe_percentile_threshold: 0.01
+
+  intense_rain:
+    enabled: false
+    metric: precipitation
+    tail: upper
+    percentile_threshold: 0.95
+    absolute_minimum_mm_h: null
+    requires_calibration: true
+    note: >-
+      O snapshot usava 50/100 mm por dia. Não há conversão fisicamente segura
+      para limiar horário; habilitar somente após calibrar um mínimo absoluto horário.
+
+  strong_wind:
+    enabled: true
+    metric: wind_speed_10m
+    tail: upper
+    percentile_threshold: 0.95
+    note: >-
+      O snapshot usava rajada diária em km/h; ERA5-Land mínimo do Predicta usa
+      vento a 10 m. Por isso, neste estágio mantém-se apenas o critério relativo.
+
+  solar_deficit:
+    enabled: true
+    metric: solar_radiation
+    tail: lower
+    percentile_threshold: 0.05
+    only_solar_hours: true
+
+score:
+  upper_tail_formula: clip((percentile - threshold) / (1 - threshold), 0, 1)
+  lower_tail_formula: clip((threshold - percentile) / threshold, 0, 1)
+
+legacy_reference:
+  file: references/openmeteo_event_rules_legacy.json
+  active: false

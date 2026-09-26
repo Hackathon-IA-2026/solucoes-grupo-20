@@ -1,0 +1,40 @@
+Predicta Web Pipeline
+Stage: Treinar/congelar H01–H24
+Command: ["/home/raul/Projetos/hackathon-ia-2026/.venv/bin/python3", "scripts/43_train_model_family.py", "--experiment", "E3", "--algorithm", "ridge", "--subsystem", "SE/CO", "--calibration-hours", "720", "--alpha", "1.0", "--model-dir", "models/demand/e3_ridge_se_co_web_v1", "--model-family-id", "E3_RIDGE_SE_CO_WEB_V1", "--train-start", "2020-09-01", "--train-end", "2026-09-25"]
+
+Traceback (most recent call last):
+  File "/home/raul/Projetos/hackathon-ia-2026/scripts/43_train_model_family.py", line 61, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/home/raul/Projetos/hackathon-ia-2026/scripts/43_train_model_family.py", line 38, in main
+    raw_load=read_table(a.load)
+  File "/home/raul/Projetos/hackathon-ia-2026/motor_sin/common/io.py", line 16, in read_table
+    return pd.read_parquet(path)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/home/raul/Projetos/hackathon-ia-2026/.venv/lib/python3.13/site-packages/pandas/io/parquet.py", line 669, in read_parquet
+    return impl.read(
+           ~~~~~~~~~^
+        path,
+        ^^^^^
+    ...<6 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "/home/raul/Projetos/hackathon-ia-2026/.venv/lib/python3.13/site-packages/pandas/io/parquet.py", line 258, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ~~~~~~~~~~~~~~~~~~~^
+        path,
+        ^^^^^
+    ...<2 lines>...
+        mode="rb",
+        ^^^^^^^^^^
+    )
+    ^
+  File "/home/raul/Projetos/hackathon-ia-2026/.venv/lib/python3.13/site-packages/pandas/io/parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+        path_or_handle, mode, is_text=False, storage_options=storage_options
+    )
+  File "/home/raul/Projetos/hackathon-ia-2026/.venv/lib/python3.13/site-packages/pandas/io/common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'data/processed/demand/load_hourly.parquet'

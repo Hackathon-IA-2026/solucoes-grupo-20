@@ -1,0 +1,6 @@
+Predicta v1.1.4 build validation
+
+pytest -q
+54 passed, 2 skipped
+
+Skipped tests require pyarrow in the build environment. The user runtime already uses pyarrow for Parquet.

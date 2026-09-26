@@ -1,0 +1,9 @@
+point_id,name,state,subsystem_id,latitude,longitude,timezone,weight
+sp_capital,Sao Paulo,SP,SE/CO,-23.5505,-46.6333,America/Sao_Paulo,1.0
+rj_capital,Rio de Janeiro,RJ,SE/CO,-22.9068,-43.1729,America/Sao_Paulo,1.0
+mg_capital,Belo Horizonte,MG,SE/CO,-19.9167,-43.9345,America/Sao_Paulo,1.0
+es_capital,Vitoria,ES,SE/CO,-20.3155,-40.3128,America/Sao_Paulo,1.0
+df_brasilia,Brasilia,DF,SE/CO,-15.7939,-47.8828,America/Sao_Paulo,1.0
+go_capital,Goiania,GO,SE/CO,-16.6869,-49.2648,America/Sao_Paulo,1.0
+mt_capital,Cuiaba,MT,SE/CO,-15.6014,-56.0979,America/Cuiaba,1.0
+ms_capital,Campo Grande,MS,SE/CO,-20.4697,-54.6201,America/Campo_Grande,1.0

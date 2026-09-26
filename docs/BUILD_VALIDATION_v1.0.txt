@@ -1,0 +1,8 @@
+Predicta v1.0 build validation
+- compileall: OK
+- pytest: 39 passed, 2 skipped (pyarrow unavailable in packaging environment)
+- in-memory end-to-end smoke: OK
+- grid_state_v1 contract: valid
+- asset_exposure_v1 contract: valid
+- system_signal_v1: 120 rows / 24 h x 5 zones / valid
+- tariff_v1: 24 rows / valid

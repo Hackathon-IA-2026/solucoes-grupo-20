@@ -1,0 +1,31 @@
+real_data:
+  pilot:
+    subsystem_id: SE/CO
+    target_year: 2025
+    test_hours: 720
+    weather_mode: PERFECT_WEATHER_BACKTEST
+  time:
+    internal_timezone: UTC
+    # ONS BALANCO 'din_instante' is timezone-naive in its dictionary. The adapter therefore
+    # REQUIRES an explicit timezone at runtime instead of silently assuming one.
+    ons_balance_source_timezone: null
+  sources:
+    ons_balance:
+      dataset: Balanço de Energia nos Subsistemas
+      url_template: https://ons-aws-prod-opendata.s3.amazonaws.com/dataset/balanco_energia_subsistema_ho/BALANCO_ENERGIA_SUBSISTEMA_{year}.parquet
+      role: target_load_and_observed_supply
+      use_as_demand_feature: false
+    aneel_tariff:
+      dataset: Tarifas de aplicação das distribuidoras de energia elétrica
+      resource_id: fcf2906c-7c32-4b9b-a637-054e7a5234f4
+      role: motor_2_base_tariff
+      use_as_demand_feature: false
+    climate:
+      role: demand_exogenous_feature
+      raw_historical_mode: ERA5_LAND_or_OpenMeteo_archive
+      operational_rule: future weather must be a forecast available at issue time
+  leakage_rules:
+    - target/load at t cannot be used as a feature for a forecast issued before t
+    - observed ONS generation in the forecast horizon is descriptive only, never an operational future feature
+    - ERA5-Land future observations are allowed only in PERFECT_WEATHER_BACKTEST
+    - tariff data never enters demand-model features in the initial experiment

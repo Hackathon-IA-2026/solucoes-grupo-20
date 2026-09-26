@@ -1,0 +1,7 @@
+point_id,name,state,subsystem_id,latitude,longitude,timezone,weight
+n_manaus,Manaus,AM,N,-3.1190,-60.0217,America/Manaus,1
+n_belem,Belém,PA,N,-1.4558,-48.4902,America/Belem,1
+n_porto_velho,Porto Velho,RO,N,-8.7608,-63.8999,America/Porto_Velho,1
+n_rio_branco,Rio Branco,AC,N,-9.9754,-67.8249,America/Rio_Branco,1
+n_macapa,Macapá,AP,N,0.0349,-51.0694,America/Belem,1
+n_palmas,Palmas,TO,N,-10.2491,-48.3243,America/Araguaina,1

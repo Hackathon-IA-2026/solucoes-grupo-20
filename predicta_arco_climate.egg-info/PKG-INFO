@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: predicta-arco-climate
+Version: 0.4.0
+Summary: Predicta climate router and historical store using ERA5-Land ARCO
+Requires-Python: >=3.11
+Requires-Dist: requests<3,>=2.32
+Requires-Dist: numpy<3,>=2.0
+Requires-Dist: pandas<3,>=2.2
+Requires-Dist: pyarrow<22,>=17
+Requires-Dist: xarray>=2025.1
+Requires-Dist: zarr<4,>=2.18
+Requires-Dist: fsspec>=2024.10
+Requires-Dist: httpio>=0.3
+Requires-Dist: dask[array]>=2025.1
+Requires-Dist: django<6,>=5.2.17
+Requires-Dist: djangorestframework<4,>=3.15
+Requires-Dist: drf-spectacular<1,>=0.28
+Requires-Dist: whitenoise<7,>=6.9
+Requires-Dist: boto3<2,>=1.35

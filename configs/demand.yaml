@@ -1,0 +1,32 @@
+demand:
+  forecast_unit: ONS_SUBSYSTEM
+  aggregate_unit: SIN
+  temporal_resolution: 1h
+  horizon_hours: 24
+  storage_timezone: UTC
+  calendar_timezone_default: America/Sao_Paulo
+
+features:
+  lags_hours: [1, 2, 24, 48, 168]
+  calendar: [hour, day_of_week, weekend, holiday_national, carnival, good_friday, corpus_christi, month]
+  climate_aggregation_first_mvp: [mean, median, p90, max, incident_cell_fraction]
+  weighting_method_default: uniform
+
+backtest:
+  method: fixed_origin_direct_multi_horizon
+  forecast_horizon_hours: 24
+  origin_step_hours: 24
+  # One model per H01..H24. Every load feature is anchored at issue_time or earlier.
+  load_feature_policy: issue_time_anchored
+  interval_calibration: heldout_pretest_asymmetric_residual_quantiles
+  calibration_hours_default: 720
+
+experiments:
+  E0_D1: observed_D_minus_1_day_available_at_issue
+  E0_D7: observed_D_minus_7_days_available_at_issue
+  E0_BLEND: mean_D1_D7
+  E1: history_calendar
+  E2: history_calendar_raw_climate
+  E3: history_calendar_raw_climate_anomalies_incidents
+
+metrics: [MAE, RMSE, WAPE, p10_p90_coverage, extreme_event_error]

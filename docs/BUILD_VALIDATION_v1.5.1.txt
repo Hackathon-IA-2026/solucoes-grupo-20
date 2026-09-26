@@ -1,0 +1,12 @@
+Predicta Web Studio v1.5.1 hotfix validation
+
+- python -m compileall: OK
+- pytest -q: 70 passed, 2 skipped (pyarrow unavailable in build environment)
+- stage registry static check: every Stage.params is a tuple; forecast_active has 1 Param
+- Django runtime suite could not be executed in build environment because Django is unavailable offline.
+  Expected local validation:
+    python manage.py check
+    python manage.py test web.studio
+
+Primary hotfix:
+- v1.5.0 forecast_active had params=(Param(...)) instead of params=(Param(...),), causing Django template iteration to fail with TypeError: 'Param' object is not iterable.

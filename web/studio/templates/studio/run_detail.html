@@ -1,0 +1,23 @@
+{% extends 'studio/base.html' %}
+{% load date_display %}
+{% block title %}Execução · Predicta{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div><p class="eyebrow">Execução do pipeline</p><h1>{{ run.stage_label }}</h1><p>{% if stage %}{{ stage.summary }}{% endif %}</p></div>
+  <div><span id="run-badge" class="badge status-{{ run.status|lower }}">{{ run.get_status_display }}</span></div>
+</section>
+<div class="two-col">
+<section class="panel">
+  <h2>O que está sendo executado</h2>
+  {% if stage %}<p>{{ stage.explanation }}</p><p><b>Objetivo:</b> {{ stage.why }}</p>{% endif %}
+  <dl class="definition-list"><dt>Início</dt><dd>{% if run.started_at %}{% human_date run.started_at %}{% else %}aguardando{% endif %}</dd><dt>PID</dt><dd>{{ run.pid|default:'—' }}</dd><dt>Código de retorno</dt><dd id="return-code">{{ run.return_code|default:'—' }}</dd><dt>Parâmetros</dt><dd><code>{{ run.parameters }}</code></dd></dl>
+</section>
+<section class="panel"><h2>Como interpretar</h2><p>O log abaixo é a saída do mesmo script que seria usado no terminal. A página atualiza automaticamente enquanto a etapa estiver em execução.</p>{% if run.error_message %}<div class="error-box">{{ run.error_message }}</div>{% endif %}<a class="button" href="{% url 'studio:pipeline' %}">Voltar ao pipeline</a></section>
+</div>
+<section class="panel"><div class="panel-head"><h2>Log</h2><span id="run-state">{{ run.status }}</span></div><pre id="run-log" class="terminal">{{ log }}</pre></section>
+{% endblock %}
+{% block scripts %}
+<script>
+Predicta.pollRun("{% url 'studio:run_status' run.id %}", "{{ run.status }}");
+</script>
+{% endblock %}

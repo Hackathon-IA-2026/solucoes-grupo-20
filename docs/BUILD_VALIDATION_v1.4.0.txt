@@ -1,0 +1,15 @@
+Predicta v1.4.0 build validation
+
+pytest -q
+70 passed, 2 skipped
+
+Skipped tests are Parquet I/O tests gated by pyarrow in the packaging environment.
+The project dependency set includes pyarrow; the user's local environment has already executed Parquet successfully.
+
+python -m compileall -q motor_sin motor_tarifa contracts scripts
+OK
+
+CLI smoke (CSV, no pyarrow required):
+- scripts/39_build_real_system_signal.py -> 24 rows, system_signal_v1 valid=True
+- scripts/41_simulate_customer_mvp.py -> 24 tariff rows and customer JSON generated
+OK

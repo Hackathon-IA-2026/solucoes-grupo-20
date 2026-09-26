@@ -1,0 +1,29 @@
+{% extends 'studio/base.html' %}
+{% block title %}Modelos · Predicta{% endblock %}
+{% block content %}
+<section class="page-header"><div><p class="eyebrow">5 · Modelos</p><h1>Congele, compare e promova artefatos</h1><p>Validação decide se uma configuração é boa. Esta tela transforma a configuração escolhida em 24 modelos persistentes H01–H24 e define qual família será usada na operação.</p></div><div class="info-callout"><b>Promoção ≠ treino.</b> “Usar como modelo ativo” só troca a referência operacional; pesos não são recalculados.</div></section>
+
+{% if models %}<div class="model-grid">{% for m in models %}<article class="model-card {% if active_model and active_model.model_dir == m.model_dir %}active{% endif %}"><div class="model-top"><span class="badge">{{ m.experiment }}</span><span class="badge">{{ m.algorithm }}</span>{% if active_model and active_model.model_dir == m.model_dir %}<span class="badge status-success">ATIVO</span>{% endif %}</div><h2>{{ m.model_family_id }}</h2><dl><dt>Subsistema</dt><dd>{{ m.subsystem_id }}</dd><dt>Algoritmo</dt><dd>{{ m.algorithm }}</dd><dt>Features</dt><dd>{{ m.feature_set_version|default:'legado' }}</dd><dt>Horizontes</dt><dd>{{ m.models_count }}</dd><dt>Validação</dt><dd><a href="{% url 'studio:validation' %}">ver métricas comparáveis</a></dd><dt>Histórico</dt><dd>{{ m.load_history_start_utc|default:'—' }} → {{ m.load_history_end_utc|default:'—' }}</dd><dt>Calibração</dt><dd>{{ m.calibration_hours|default:'—' }} h</dd><dt>Diretório</dt><dd><code>{{ m.model_dir }}</code></dd></dl><form method="post" action="{% url 'studio:activate_model' %}">{% csrf_token %}<input type="hidden" name="model_dir" value="{{ m.model_dir }}"><input type="hidden" name="model_family_id" value="{{ m.model_family_id }}"><button class="button primary" {% if active_model and active_model.model_dir == m.model_dir %}disabled{% endif %}>Usar como modelo ativo</button></form></article>{% endfor %}</div>{% else %}<section class="panel empty-state"><h2>Nenhuma família congelada</h2><p>Primeiro valide uma configuração em Modelagem. Depois use o formulário abaixo para criar os artefatos de deployment.</p></section>{% endif %}
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Deployment</p><h2>Treinar/congelar configuração escolhida</h2><p>Este treino usa o histórico selecionado e reserva apenas a cauda de calibração. Ele não é o holdout de seleção — essa decisão deve vir da página Validação.</p></div><a href="{% url 'studio:validation' %}">rever validação →</a></div>
+  <form method="post" action="{% url 'studio:run_stage' train_stage.id %}" id="freeze-form">{% csrf_token %}
+    <div class="form-grid">
+      <label class="field"><span>Features</span><select name="experiment"><option value="E1">E1</option><option value="E2">E2</option><option value="E3" selected>E3</option></select></label>
+      <label class="field"><span>Algoritmo</span><select name="algorithm" id="freeze-algorithm"><option value="ridge">Ridge</option><option value="xgboost">XGBoost</option></select></label>
+      <label class="field"><span>Subsistema</span><select name="subsystem"><option value="SE/CO">SE/CO</option></select></label>
+      <label class="field"><span>Treino: início</span><input type="date" name="train_start"></label>
+      <label class="field"><span>Treino: fim</span><input type="date" name="train_end"></label>
+      <label class="field"><span>Calibração</span><input type="number" name="calibration_hours" value="720"></label>
+      <label class="field"><span>Ridge alpha</span><input type="number" step="0.1" name="alpha" value="1.0"></label>
+      <label class="field"><span>ID da família</span><input type="text" name="model_family_id" placeholder="gerado automaticamente"></label>
+      <label class="field"><span>Diretório</span><input type="text" name="model_dir" placeholder="models/demand/..."></label>
+    </div>
+    <div id="freeze-xgb" class="xgb-box" hidden><h3>XGBoost</h3><div class="form-grid"><label class="field"><span>n_estimators</span><input type="number" name="n_estimators" value="350"></label><label class="field"><span>max_depth</span><input type="number" name="max_depth" value="6"></label><label class="field"><span>learning_rate</span><input type="number" step="0.01" name="learning_rate" value="0.05"></label><label class="field"><span>subsample</span><input type="number" step="0.05" name="subsample" value="0.9"></label><label class="field"><span>colsample_bytree</span><input type="number" step="0.05" name="colsample_bytree" value="0.9"></label></div></div>
+    <button class="button primary large">Treinar e congelar 24 modelos</button>
+  </form>
+</section>
+
+<section class="panel"><h2>O que acontece depois?</h2><div class="explain-grid"><div><b>1. Família congelada</b><p>24 artefatos H01–H24 + manifest com algoritmo, features e cobertura histórica.</p></div><div><b>2. Promoção</b><p>Você escolhe a família ativa sem treinar novamente.</p></div><div><b>3. Inferência</b><p>O pipeline operacional reconstrói features e chama os modelos congelados.</p></div><div><b>4. Django</b><p>Produto consome system_signal_v1; não treina modelo durante a requisição do cliente.</p></div></div></section>
+{% endblock %}
+{% block scripts %}<script>Predicta.bindAlgorithmForm('freeze-algorithm','freeze-xgb');</script>{% endblock %}

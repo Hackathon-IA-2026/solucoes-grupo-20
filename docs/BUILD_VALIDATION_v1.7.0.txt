@@ -1,0 +1,6 @@
+Predicta v1.7.0 build validation
+
+python -m compileall: OK
+pytest -q: 83 passed, 2 skipped
+skips: pyarrow unavailable in packaging environment
+Django runtime: not available in packaging environment; run manage.py check/test locally.

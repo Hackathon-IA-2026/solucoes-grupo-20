@@ -1,0 +1,3 @@
+DatGeracaoConjuntoDados,DscREH,SigAgente,NumCNPJDistribuidora,DatInicioVigencia,DatFimVigencia,DscBaseTarifaria,DscSubGrupo,DscModalidadeTarifaria,DscClasse,DscSubClasse,DscDetalhe,NomPostoTarifario,DscUnidadeTerciaria,SigAgenteAcessante,VlrTUSD,VlrTE
+2026-09-18,REH 0000,DIST TESTE,00000000000000,01/01/2026,31/12/2026,Aplicacao,B1,Convencional,Residencial,Residencial,Não se aplica,Não se aplica,R$/MWh,,"430,50","280,25"
+2026-09-18,REH 0000,DIST TESTE,00000000000000,01/01/2026,31/12/2026,Aplicacao,A4,Verde,Comercial,Comercial,Demanda,Não se aplica,R$/kW,,"32,10",0

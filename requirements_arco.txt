@@ -1,0 +1,4 @@
+xarray
+zarr
+fsspec
+aiohttp

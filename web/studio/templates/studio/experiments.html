@@ -1,0 +1,61 @@
+{% extends 'studio/base.html' %}
+{% block title %}Experimentos · Predicta{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div><p class="eyebrow">Treino e validação</p><h1>Compare o que cada camada acrescenta</h1><p>E0 é referência simples; E1 usa histórico+calendário; E2 adiciona clima bruto; E3 adiciona anomalias e eventos. Todos devem ser avaliados no mesmo holdout temporal.</p></div>
+  <div class="info-callout"><b>Regra de leitura:</b> MAE/RMSE/WAPE menores são melhores. Cobertura p10–p90 próxima de 80% indica intervalos coerentes com o alvo nominal.</div>
+</section>
+
+{% if metrics.exists %}
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Holdout atual</p><h2>Resumo global</h2></div><code>{{ metrics.path }}</code></div>
+  <div class="metric-table-cards">
+    {% for m in metrics.rows %}
+    <article class="experiment-card {% if m.best_wape %}highlight{% endif %}"><span>{{ m.experiment }}</span><strong>{{ m.WAPE_pct|floatformat:2 }}%</strong><small>WAPE</small><dl><dt>MAE</dt><dd>{{ m.MAE|floatformat:0 }} MW</dd><dt>RMSE</dt><dd>{{ m.RMSE|floatformat:0 }} MW</dd><dt>P10–P90</dt><dd>{% if m.has_coverage %}{{ m.coverage_pct|floatformat:1 }}%{% else %}—{% endif %}</dd></dl></article>
+    {% endfor %}
+  </div>
+</section>
+<section class="panel">
+  <div class="panel-head"><div><h2>WAPE por horizonte H01–H24</h2><p>Mostra onde cada modelo ganha ou perde precisão ao se afastar do instante de emissão.</p></div></div>
+  <div id="horizon-chart" class="chart tall"></div>
+  <div class="chart-note">E1: histórico+calendário · E2: + clima bruto · E3: + anomalias/eventos. Valores em %.</div>
+</section>
+{{ metrics.horizon_labels|json_script:'horizon-labels' }}
+{{ metrics.horizon_series|json_script:'horizon-series' }}
+{% else %}
+<section class="panel empty-state"><h2>Nenhuma validação detectada</h2><p>Execute E1, E2 ou E3 abaixo para gerar métricas.</p></section>
+{% endif %}
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Métricas</p><h2>O que MAE, RMSE, WAPE e cobertura dizem?</h2></div></div>
+  <div class="explain-grid">
+    <div><b>MAE</b><p>Erro absoluto médio em MW. É intuitivo: “em média erramos X MW”.</p></div>
+    <div><b>RMSE</b><p>Penaliza erros grandes mais fortemente. Útil para perceber picos de erro.</p></div>
+    <div><b>WAPE</b><p>Erro absoluto total dividido pela carga total. Facilita comparar períodos e horizontes.</p></div>
+    <div><b>Cobertura p10–p90</b><p>Percentual do realizado contido no intervalo previsto. O alvo do MVP é aproximadamente 80%.</p></div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Executar</p><h2>Refazer validações</h2><p>Use os mesmos parâmetros para comparações justas.</p></div></div>
+  <div class="stage-grid compact-grid">
+  {% for stage in validation_stages %}
+    <article class="stage-card"><h3>{{ stage.title }}</h3><p>{{ stage.explanation }}</p>
+      <form method="post" action="{% url 'studio:run_stage' stage.id %}">{% csrf_token %}
+        {% for p in stage.params %}<label class="field"><span>{{ p.label }}</span>{% if p.kind == 'select' %}<select name="{{ p.name }}">{% for value,label in p.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>{% else %}<input type="{{ p.kind }}" name="{{ p.name }}" value="{{ p.default }}">{% endif %}</label>{% endfor %}
+        <button class="button primary">Executar em segundo plano</button>
+      </form>
+    </article>
+  {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><div><p class="eyebrow">Treino para deployment</p><h2>Treinar e congelar uma família H01–H24</h2><p>Após escolher um experimento, este passo gera 24 modelos persistentes. Isso não substitui a validação held-out; é o empacotamento do modelo escolhido.</p></div></div>
+  <form class="form-grid" method="post" action="{% url 'studio:run_stage' train_stage.id %}">{% csrf_token %}
+    {% for p in train_stage.params %}<label class="field"><span>{{ p.label }}</span>{% if p.kind == 'select' %}<select name="{{ p.name }}">{% for value,label in p.choices %}<option value="{{ value }}" {% if value == p.default %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% else %}<input type="{{ p.kind }}" name="{{ p.name }}" value="{{ p.default }}">{% endif %}<small>{{ p.help }}</small></label>{% endfor %}
+    <div class="form-action"><button class="button primary">Treinar/congelar modelo</button><a class="button" href="{% url 'studio:models' %}">Ver modelos</a></div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}{% if metrics.exists %}<script>PredictaCharts.multiLine('horizon-chart',JSON.parse(document.getElementById('horizon-labels').textContent),JSON.parse(document.getElementById('horizon-series').textContent),{suffix:'%',minZero:true});</script>{% endif %}{% endblock %}

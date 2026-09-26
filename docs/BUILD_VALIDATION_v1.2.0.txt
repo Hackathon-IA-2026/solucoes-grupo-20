@@ -1,0 +1,17 @@
+Predicta v1.2.0 build validation
+
+pytest -q
+58 passed, 2 skipped
+
+Skipped in build environment only:
+- test_climate_baseline_io.py: pyarrow unavailable
+- test_climate_normalize.py: pyarrow unavailable
+
+New validated behavior:
+- E2 pilot point configuration validation
+- load-derived climate date bounds
+- representative 0.1° cell aggregation to SE/CO
+- raw climate runs E2 without silently duplicating E3
+- OpenMeteo snapshot baseline years = Y-10..Y-1
+- OpenMeteo snapshot anomaly = daily value - monthly climatological mean
+- extreme heat predicate uses p95 + anomaly >= +3 C

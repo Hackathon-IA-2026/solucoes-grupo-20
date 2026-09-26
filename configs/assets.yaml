@@ -1,0 +1,17 @@
+assets:
+  generation_center_percentile: 0.90
+
+hub_score:
+  interpretation: analytical_cartographic_priority_not_official_ONS_criticality
+  weights:
+    transformer_mva: 0.40
+    degree: 0.25
+    max_kv: 0.25
+    betweenness: 0.10
+  renormalize_when_missing: true
+
+location_quality:
+  A: official_or_registry_coordinate
+  B: approximate_centroid_from_registry
+  C: group_without_reliable_individual_point
+  D: only_state_or_subsystem
