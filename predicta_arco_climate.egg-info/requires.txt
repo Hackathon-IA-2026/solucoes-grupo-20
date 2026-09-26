@@ -12,3 +12,4 @@ djangorestframework<4,>=3.15
 drf-spectacular<1,>=0.28
 whitenoise<7,>=6.9
 boto3<2,>=1.35
+gunicorn<24,>=23

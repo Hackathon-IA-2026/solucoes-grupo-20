@@ -17,6 +17,7 @@ drf-spectacular==0.30.0
 frozenlist==1.8.0
 fsspec==2026.9.0
 google-crc32c==1.8.0
+gunicorn==23.0.0
 httpio==0.3.0
 idna==3.20
 inflection==0.5.1
@@ -31,7 +32,6 @@ numpy==2.5.3
 packaging==26.3
 pandas==2.3.3
 partd==1.4.2
--e file:///home/raul/Projetos/hackathon-ia-2026
 propcache==0.5.4
 pyarrow==21.0.0
 python-dateutil==2.9.0.post0
