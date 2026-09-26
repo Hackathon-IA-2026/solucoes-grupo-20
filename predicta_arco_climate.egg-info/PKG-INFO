@@ -3,6 +3,7 @@ Name: predicta-arco-climate
 Version: 0.4.0
 Summary: Predicta climate router and historical store using ERA5-Land ARCO
 Requires-Python: >=3.11
+License-File: LICENSE
 Requires-Dist: requests<3,>=2.32
 Requires-Dist: numpy<3,>=2.0
 Requires-Dist: pandas<3,>=2.2
@@ -17,3 +18,5 @@ Requires-Dist: djangorestframework<4,>=3.15
 Requires-Dist: drf-spectacular<1,>=0.28
 Requires-Dist: whitenoise<7,>=6.9
 Requires-Dist: boto3<2,>=1.35
+Requires-Dist: gunicorn<24,>=23
+Dynamic: license-file
