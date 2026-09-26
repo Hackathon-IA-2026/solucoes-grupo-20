@@ -4,7 +4,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parents[2]
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'predicta-local-mvp-change-me')
 DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
-configured_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost'``).split(',')
+configured_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
 ALLOWED_HOSTS = sorted({
     host.strip()
