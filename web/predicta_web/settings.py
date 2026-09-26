@@ -8,7 +8,7 @@ configured_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
 ALLOWED_HOSTS = sorted({
     host.strip()
-    for host in [*configured_hosts, render_host, 'hackathon-ia-2026.onrender.com']
+    for host in [*configured_hosts, render_host, 'hackathon-ia-2026.onrender.com', '0.0.0.0']
     if host.strip()
 })
 
