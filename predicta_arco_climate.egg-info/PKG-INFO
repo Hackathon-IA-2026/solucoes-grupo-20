@@ -16,6 +16,7 @@ Requires-Dist: fsspec>=2024.10
 Requires-Dist: httpio>=0.3
 Requires-Dist: dask[array]>=2025.1
 Requires-Dist: django<6,>=5.2.17
+Requires-Dist: django-cors-headers<5,>=4.4
 Requires-Dist: djangorestframework<4,>=3.15
 Requires-Dist: drf-spectacular<1,>=0.28
 Requires-Dist: whitenoise<7,>=6.9
