@@ -1,0 +1,283 @@
+cell_id,subsystem_id,plant_name,generation_type,capacity_mw
+g01_0645_1254,SE/CO,Itaipu (Parte Brasileira),Hídrica,7000.0
+g01_0861_1303,N,Tucuruí,Hídrica,8535.0
+g01_0803_1422,NE,Xingó,Hídrica,3162.0
+g01_0669_1355,SE/CO,Almirante Álvaro Alberto - Unidade II (Antiga Angra II),NUCLEAR,1350.0
+g01_0696_1286,SE/CO,Ilha Solteira,Hídrica,3444.0
+g01_0812_1160,SE/CO,Santo Antônio,Hídrica,3568.0
+g01_0627_1276,S,Itá,Hídrica,1450.0
+g01_0639_1283,S,Governador Bento Munhoz da Rocha Netto (Foz do Areia),Hídrica,1676.0
+g01_0643_1273,S,Salto Santiago,Hídrica,1420.0
+g01_0805_1417,NE,Paulo Afonso IV,Hídrica,2462.4
+g01_0709_1295,SE/CO,São Simão,Hídrica,1710.0
+g01_0675_1270,SE/CO,Porto Primavera (Eng° Sérgio Motta),Hídrica,1540.0
+g01_0761_1316,SE/CO,Serra da Mesa,Hídrica,1275.0
+g01_0644_1265,S,Governador José Richa (Salto Caxias),Hídrica,1240.0
+g01_0624_1282,S,Machadinho,Hídrica,1140.0
+g01_0644_1269,S,Salto Osório,Hídrica,1103.67
+g01_0692_1283,SE/CO,Jupiá (Eng° Souza Dias),Hídrica,1551.2
+g01_0715_1308,SE/CO,Itumbiara,Hídrica,2082.0
+g01_0642_1278,S,Governador Ney Aminthas de Barros Braga (Segredo),Hídrica,1260.0
+g01_0628_1269,S,Foz do Chapecó,Hídrica,855.0
+g01_0623_1286,S,Campos Novos,Hídrica,880.0
+g01_0669_1355,SE/CO,Almirante Álvaro Alberto - Unidade I (Antiga Angra I),NUCLEAR,640.0
+g01_0808_1416,NE,Luiz Gonzaga (Itaparica),Hídrica,1479.6
+g01_0701_1296,SE/CO,Água Vermelha (Antiga José Ermírio de Moraes),Hídrica,1396.2
+g01_0693_1336,SE/CO,Furnas,Hídrica,1216.0
+g01_0851_1356,N,Maranhão III,Térmica,518.8
+g01_0868_1200,N,Mauá 3,Térmica,590.75
+g01_0807_1153,SE/CO,Jirau,Hídrica,3750.0
+g01_0696_1308,SE/CO,Marimbondo,Hídrica,1440.0
+g01_0698_1327,SE/CO,Estreito (Luiz Carlos Barreto de Carvalho),Hídrica,1050.0
+g01_0673_1286,SE/CO,Capivara (Escola de Engenharia Mackenzie),Hídrica,643.0
+g01_0676_1381,SE/CO,Marlim Azul ( Antiga Vale Azul II),Térmica,565.5
+g01_0805_1391,NE,Sobradinho,Hídrica,1050.3
+g01_0622_1288,S,Barra Grande,Hídrica,690.0
+g01_0585_1262,S,Pampa Sul,Térmica,345.0
+g01_0802_1316,SE/CO,Luís Eduardo Magalhães (Lajeado),Hídrica,902.5
+g01_0672_1367,SE/CO,Termorio (Antiga Governador Leonel Brizola),Térmica,989.2
+g01_0765_1318,SE/CO,Cana Brava,Hídrica,450.0
+g01_0717_1347,SE/CO,Três Marias,Hídrica,396.0
+g01_0834_1325,N,Estreito,Hídrica,1087.0
+g01_0715_1320,SE/CO,Theodomiro Carneiro Santiago ( Antiga Emborcação),Hídrica,1192.0
+g01_0884_1312,N,Novo Tempo Barcarena,Térmica,629.37
+g01_0673_1361,SE/CO,Nilo Peçanha,Hídrica,380.03
+g01_0697_1329,SE/CO,Marechal Mascarenhas de Moraes (Antiga Peixoto),Hídrica,476.0
+g01_0806_1232,SE/CO,Teles Pires,Hídrica,1819.8
+g01_0714_1305,SE/CO,Cachoeira Dourada,Hídrica,658.0
+g01_0693_1287,SE/CO,Três Irmãos,Hídrica,807.5
+g01_0607_1267,S,Itaúba,Hídrica,500.4
+g01_0777_1316,SE/CO,Peixe Angical,Hídrica,498.75
+g01_0584_1263,S,Candiota III,Térmica,350.0
+g01_0615_1310,S,Jorge Lacerda III,Térmica,220.0
+g01_0674_1279,SE/CO,Taquaruçu (Escola Politécnica),Hídrica,525.0
+g01_0615_1310,S,Jorge Lacerda IV,Térmica,330.0
+g01_0699_1325,SE/CO,Jaguara,Hídrica,424.0
+g01_0670_1362,SE/CO,Do Atlântico,Térmica,490.0
+g01_0674_1271,SE/CO,Rosana,Hídrica,354.0
+g01_0846_1324,N,Suzano Maranhão,Térmica,254.84
+g01_0672_1363,SE/CO,Baixada Fluminense,Térmica,530.0
+g01_0868_1282,N,Belo Monte,Hídrica,11233.1
+g01_0851_1356,N,MC2 Nova Venécia 2,Térmica,265.43
+g01_0659_1292,S,Governador Jayme Canet Junior (Antiga MAUÁ),Hídrica,363.14
+g01_0771_1317,SE/CO,São Salvador,Hídrica,243.2
+g01_0670_1362,SE/CO,Santa Cruz,Térmica,500.0
+g01_0732_1374,SE/CO,Irapé,Hídrica,399.0
+g01_0851_1356,N,Parnaíba V (Antiga Parnaíba 5A e 5B),Térmica,365.32
+g01_0708_1323,SE/CO,Nova Ponte,Hídrica,510.0
+g01_0864_1411,NE,CSP,Térmica,218.0
+g01_0880_1205,N,Balbina,Hídrica,249.75
+g01_0661_1335,SE/CO,Cubatão (Euzébio Rocha),Térmica,249.9
+g01_0644_1263,S,Baixo Iguaçu,Hídrica,350.2
+g01_0806_1417,NE,Paulo Afonso III,Hídrica,794.2
+g01_0637_1311,N,Maranhão IV (Antiga MC2 Joinville),Térmica,337.6
+g01_0609_1286,S,Castro Alves,Hídrica,130.0
+g01_0868_1199,N,Aparecida,Térmica,166.0
+g01_0702_1396,N,Maranhão V (Antiga MC2 João Neiva),Térmica,337.6
+g01_0698_1314,SE/CO,Porto Colômbia,Hídrica,320.0
+g01_0808_1229,SE/CO,São Manoel,Hídrica,700.0
+g01_0710_1319,SE/CO,Miranda,Hídrica,408.0
+g01_0699_1317,SE/CO,Volta Grande,Hídrica,380.0
+g01_0623_1290,S,Garibaldi,Hídrica,191.9
+g01_0832_1364,NE,Boa Esperança (Antiga Castelo Branco),Hídrica,237.3
+g01_0624_1272,S,Passo Fundo,Hídrica,226.0
+g01_0648_1311,S,Governador Pedro Viriato Parigot de Souza (Capivari/Cachoeira),Hídrica,260.0
+g01_0673_1361,SE/CO,Fontes Nova,Hídrica,131.99
+g01_0700_1322,SE/CO,Igarapava,Hídrica,210.0
+g01_0615_1310,S,Jorge Lacerda I e II,Térmica,190.0
+g01_0736_1404,NE,Veracel,Térmica,126.0
+g01_0720_1314,SE/CO,Corumbá I,Hídrica,375.0
+g01_0668_1302,SE/CO,Chavantes,Hídrica,414.0
+g01_0723_1251,SE/CO,Ponte de Pedra,Hídrica,176.1
+g01_0605_1267,S,Dona Francisca,Hídrica,125.0
+g01_0787_1245,SE/CO,Sinop,Hídrica,401.88
+g01_0625_1291,S,São Roque,Hídrica,141.9
+g01_0680_1372,SE/CO,Simplício,Hídrica,333.7
+g01_0712_1318,SE/CO,Amador Aguiar I (Antiga Capim Branco I),Hídrica,243.09
+g01_0893_1274,N,Santo Antônio do Jari,Hídrica,392.95
+g01_0790_1242,SE/CO,Colíder,Hídrica,300.0
+g01_0713_1315,SE/CO,Amador Aguiar II (Antiga Capim Branco II),Hídrica,211.47
+g01_0772_1414,NE,Termobahia (Antiga Celso Furtado),Térmica,185.89
+g01_0688_1297,SE/CO,Nova Avanhandava (Rui Barbosa),Hídrica,347.4
+g01_0674_1354,SE/CO,Funil,Hídrica,216.0
+g01_0609_1268,S,Passo Real,Hídrica,158.0
+g01_0678_1312,SE/CO,Bariri (Álvaro de Souza Lima),Hídrica,143.1
+g01_0633_1274,S,Quebra Queixo,Hídrica,120.0
+g01_0929_1193,N,Jaguatirica II,Térmica,126.29
+g01_0643_1280,S,Santa Clara,Hídrica,120.17
+g01_0729_1251,SE/CO,Itiquira (Casas de Forças  I e  II),Hídrica,157.37
+g01_0642_1279,S,Fundão,Hídrica,120.17
+g01_0661_1335,SE/CO,Henry Borden,Hídrica,889.0
+g01_0869_1199,N,Tucunaré (Antiga - Ponta Negra),Térmica,73.4
+g01_0682_1310,SE/CO,Ibitinga,Hídrica,131.49
+g01_0740_1404,NE,Itapebi,Hídrica,462.01
+g01_0609_1283,S,14 de Julho,Hídrica,100.0
+g01_0665_1343,SE/CO,Paraibuna,Hídrica,87.02
+g01_0688_1349,SE/CO,Funil,Hídrica,180.0
+g01_0687_1302,SE/CO,Promissão (Mário Lopes Leão),Hídrica,264.0
+g01_0681_1374,SE/CO,Ilha dos Pombos,Hídrica,187.17
+g01_0744_1239,SE/CO,Cuiabá (Antiga Mário Covas),Térmica,529.2
+g01_0719_1323,SE/CO,Serra do Facão,Hídrica,212.58
+g01_0737_1326,SE/CO,Queimado,Hídrica,105.0
+g01_0806_1417,NE,Paulo Afonso II,Hídrica,443.0
+g01_0871_1199,N,Poraquê (Antiga - Cristiano Rocha),Térmica,85.38
+g01_0704_1390,SE/CO,Mascarenhas,Hídrica,198.0
+g01_0870_1199,N,Pirarucu (Antiga - Manauara),Térmica,73.4
+g01_0705_1389,SE/CO,Aimorés,Hídrica,330.0
+g01_0628_1304,S,Salto Pilão,Hídrica,191.89
+g01_0812_1165,SE/CO,Samuel,Hídrica,216.75
+g01_0870_1199,N,Jaraqui,Térmica,75.48
+g01_0747_1212,SE/CO,Jauru,Hídrica,121.5
+g01_0626_1272,S,Monjolinho (Antiga Alzir dos Santos Antunes),Hídrica,74.0
+g01_0868_1200,N,Tambaqui,Térmica,93.04
+g01_0700_1359,SE/CO,Ibirité (Aureliano Chaves),Térmica,226.0
+g01_0674_1314,SE/CO,Barra Bonita,Hídrica,140.76
+g01_0806_1417,NE,Apolônio Sales (Antiga Moxotó),Hídrica,400.0
+g01_0909_1287,N,Coaracy Nunes,Hídrica,78.0
+g01_0663_1333,SE/CO,Nova Piratininga (Antiga Fernando Gasparian),Térmica,386.08
+g01_0908_1288,N,Ferreira Gomes,Hídrica,252.0
+g01_0676_1381,SE/CO,Termomacaé (Antiga Mário Lago),Térmica,900.0
+g01_0670_1294,SE/CO,Canoas I,Hídrica,82.5
+g01_0748_1210,SE/CO,Guaporé,Hídrica,120.0
+g01_0673_1361,SE/CO,Pereira Passos,Hídrica,99.9
+g01_0670_1300,SE/CO,Salto Grande (Lucas Nogueira Garcez),Hídrica,73.8
+g01_0751_1242,SE/CO,Manso,Hídrica,210.0
+g01_0697_1371,SE/CO,Risoleta Neves (Antiga Candonga),Hídrica,140.0
+g01_0670_1297,SE/CO,Canoas II,Hídrica,72.0
+g01_0774_1410,NE,Pedra do Cavalo,Hídrica,160.0
+g01_0618_1251,S,São José,Hídrica,51.0
+g01_0618_1249,S,Passo São João,Hídrica,77.0
+g01_0683_1330,SE/CO,Euclides da Cunha,Hídrica,108.8
+g01_0908_1287,N,Cachoeira Caldeirão,Hídrica,219.0
+g01_0709_1378,SE/CO,Baguari,Hídrica,140.0
+g01_0666_1341,SE/CO,Santa Branca,Hídrica,56.05
+g01_0681_1259,SE/CO,Eldorado,Térmica,140.0
+g01_0780_1193,SE/CO,Rondon II,Hídrica,73.5
+g01_0870_1389,NE,Praia Formosa,Eólica,105.0
+g01_0684_1333,SE/CO,Caconde,Hídrica,80.4
+g01_0690_1382,SE/CO,Rosal,Hídrica,55.0
+g01_0736_1318,SE/CO,Corumbá IV,Hídrica,129.2
+g01_0672_1363,SE/CO,Seropédica (Antiga Barbosa Lima Sobrinho),Térmica,360.0
+g01_0871_1257,N,Curuá-Una,Hídrica,42.8
+g01_0726_1325,SE/CO,Batalha (Antiga Paulista),Hídrica,52.5
+g01_0667_1307,SE/CO,Jurumirim (Armando Avellanal Laydner),Hídrica,100.96
+g01_0872_1218,N,Azulão,Térmica,295.43
+g01_0869_1403,NE,Icaraizinho,Eólica,54.6
+g01_0765_1209,SE/CO,Juruena,Hídrica,50.0
+g01_0708_1372,SE/CO,Salto Grande,Hídrica,102.0
+g01_0680_1366,SE/CO,Sobragi,Hídrica,60.0
+g01_0681_1364,SE/CO,Picada,Hídrica,50.0
+g01_0702_1370,SE/CO,Guilman Amorim,Hídrica,140.0
+g01_0696_1285,SE/CO,Onça Pintada,Térmica,50.0
+g01_0668_1306,SE/CO,Pirajú,Hídrica,70.0
+g01_0846_1431,NE,Vale do Açú (Antiga Jesus Soares Pereira),Térmica,110.0
+g01_0687_1353,SE/CO,Itutinga,Hídrica,52.0
+g01_0703_1371,SE/CO,Sá Carvalho,Hídrica,78.0
+g01_0686_1353,SE/CO,Camargos,Hídrica,46.0
+g01_0712_1297,SE/CO,Santa Vitória,Térmica,41.4
+g01_0798_1205,SE/CO,Dardanelos,Hídrica,261.0
+g01_0685_1375,SE/CO,Barra do Braúna,Hídrica,39.0
+g01_0732_1320,SE/CO,Corumbá III,Hídrica,96.45
+g01_0711_1288,SE/CO,Salto,Hídrica,116.0
+g01_0685_1256,SE/CO,Santa Luzia I,Térmica,130.0
+g01_0644_1306,S,Araucária,Térmica,484.15
+g01_0712_1289,SE/CO,Barra dos Coqueiros,Hídrica,90.0
+g01_0608_1266,S,Engenheiro Ernesto Jorge Dreher,Hídrica,17.87
+g01_0806_1417,NE,Paulo Afonso I,Hídrica,180.0
+g01_0708_1292,SE/CO,Salto do Rio Verdinho,Hídrica,93.0
+g01_0669_1301,SE/CO,Ourinhos,Hídrica,44.0
+g01_0848_1435,NE,Miassaba 3,Eólica,68.47
+g01_0714_1288,SE/CO,Caçu,Hídrica,65.0
+g01_0708_1293,SE/CO,Engenheiro José Luiz Muller de Godoy Pereira (Antiga Foz do Rio Claro),Hídrica,68.4
+g01_0699_1268,SE/CO,São Domingos,Hídrica,48.0
+g01_0708_1373,SE/CO,Porto Estrela,Hídrica,112.24
+g01_0669_1304,SE/CO,Ipaussu Bioenergia,Térmica,76.0
+g01_0668_1306,SE/CO,Paranapanema,Hídrica,31.5
+g01_0713_1281,SE/CO,Espora,Hídrica,32.0
+g01_0848_1436,NE,Alegria II,Eólica,100.65
+g01_0683_1329,SE/CO,Limoeiro (Armando Salles de Oliveira),Hídrica,32.0
+g01_0599_1298,S,Elebrás Cidreira 1,Eólica,70.0
+g01_0860_1388,NE,Malhadinha 1,Eólica,23.1
+g01_0681_1389,SE/CO,GNA II (Antiga GNA Porto do Açu III),Térmica,1672.6
+g01_0853_1423,NE,Pitombeira,Solar,47.25
+g01_0699_1394,SE/CO,Suíça,Hídrica,35.34
+g01_0848_1438,NE,Rei dos Ventos 3,Eólica,60.12
+g01_0683_1365,SE/CO,Juiz de Fora,Térmica,87.05
+g01_0848_1437,NE,Rei dos Ventos 1,Eólica,58.45
+g01_0609_1284,S,Monte Claro,Hídrica,130.0
+g01_0849_1436,NE,Alegria I,Eólica,51.0
+g01_0657_1292,S,Klabin Celulose,Térmica,330.0
+g01_0819_1393,NE,Sol do Piauí,Solar,48.12
+g01_0931_1191,N,Santa Luz,Térmica,11.5
+g01_0929_1195,N,Bonfim,Térmica,11.5
+g01_0932_1191,N,Pau Rainha,Térmica,11.5
+g01_0929_1192,N,Monte Cristo Sucuba,Térmica,42.25
+g01_0716_1307,SE/CO,Caramuru Itumbiara,Térmica,8.5
+g01_0927_1193,N,Cantá,Térmica,11.5
+g01_0602_1299,S,Xangri-lá,Eólica,31.7
+g01_0711_1352,SE/CO,Retiro Baixo,Hídrica,83.66
+g01_0909_1195,N,Palmaplan Energia 2,Térmica,11.55
+g01_0844_1429,NE,Assú V,Solar,34.0
+g01_0816_1449,NE,Suape II,Térmica,381.25
+g01_0721_1397,SE/CO,Santa Clara,Hídrica,60.0
+g01_0772_1415,NE,ERB Candeias,Térmica,16.79
+g01_0821_1449,NE,Pernambuco III,Térmica,200.79
+g01_0598_1263,S,São Sepé,Térmica,8.0
+g01_0670_1361,SE/CO,Karkey 013,Térmica,258.64
+g01_0816_1449,NE,U-50,Térmica,100.0
+g01_0704_1401,SE/CO,Povoação 1,Térmica,74.96
+g01_0909_1200,N,BBF Baliza,Térmica,17.94
+g01_0696_1395,SE/CO,Viana 1,Térmica,37.48
+g01_0694_1252,SE/CO,William Arjona,Térmica,177.12
+g01_0692_1283,SE/CO,Três Lagoas (Antiga Luiz Carlos Prestes),Térmica,252.0
+g01_0704_1401,SE/CO,Luiz Oscar Rodrigues de Melo (Antiga Linhares),Térmica,240.0
+g01_0670_1361,SE/CO,Karkey 019,Térmica,115.92
+g01_0690_1361,SE/CO,Porsud I,Térmica,115.92
+g01_0672_1328,SE/CO,Paulínia Verde (Antiga MP Paulínia),Térmica,20.2
+g01_0775_1417,NE,Prosperidade I,Térmica,28.02
+g01_0672_1298,SE/CO,Decasa,Térmica,33.0
+g01_0871_1399,NE,Cataventos Acaraú I,Eólica,28.0
+g01_0601_1288,S,Canoas (Antiga Sepé Tiaraju),Térmica,167.5
+g01_0816_1450,NE,Termopernambuco,Térmica,550.0
+g01_0772_1415,NE,Global II,Térmica,136.4
+g01_0772_1415,NE,Global I,Térmica,136.4
+g01_0775_1417,NE,Prosperidade IV,Térmica,9.36
+g01_0852_1426,NE,UFV Flor de Mandacaru,Solar,2.04
+g01_0861_1413,NE,Maracanaú I,Térmica,168.0
+g01_0863_1411,NE,Termoceará,Térmica,220.0
+g01_0864_1411,NE,Porto do Pecém I (Antiga MPX),Térmica,720.27
+g01_0864_1411,NE,Porto do Pecém II,Térmica,360.0
+g01_0696_1395,SE/CO,Viana,Térmica,174.6
+g01_0736_1310,SE/CO,Daia,Térmica,44.44
+g01_0712_1282,SE/CO,Queixada,Hídrica,30.0
+g01_0715_1295,SE/CO,Quirinópolis,Térmica,80.0
+g01_0731_1300,SE/CO,Palmeiras de Goiás,Térmica,175.56
+g01_0734_1307,SE/CO,Xavantes Aruanã,Térmica,53.58
+g01_0864_1354,N,Geramar I (Antiga Tocantinópolis),Térmica,165.87
+g01_0864_1354,N,Geramar II (Antiga Nova Olinda),Térmica,165.87
+g01_0851_1356,N,Parnaíba IV,Térmica,56.28
+g01_0874_1357,N,Porto do Itaqui (Antiga Termomaranhão),Térmica,360.14
+g01_0796_1230,SE/CO,Salto Apiacás,Hídrica,45.0
+g01_0827_1441,NE,Campina Grande,Térmica,169.08
+g01_0828_1451,NE,Termonordeste,Térmica,170.85
+g01_0827_1450,NE,Termoparaíba,Térmica,170.85
+g01_0806_1395,NE,Petrolina,Térmica,136.2
+g01_0817_1449,NE,Termocabo,Térmica,50.0
+g01_0821_1449,NE,Camaçari Muricy II,Térmica,144.45
+g01_0821_1449,NE,Pecém II,Térmica,144.45
+g01_0652_1279,S,Barra Bonita I,Térmica,10.32
+g01_0644_1306,S,Berneck,Térmica,13.6
+g01_0657_1292,S,Puma II,Térmica,134.8
+g01_0681_1389,SE/CO,GNA I (Antiga Novo Tempo GNA II),Térmica,1338.3
+g01_0670_1361,SE/CO,Porsud II,Térmica,78.32
+g01_0676_1381,SE/CO,Norte Fluminense,Térmica,826.78
+g01_0841_1446,NE,Potiguar III,Térmica,51.46
+g01_0841_1447,NE,Potiguar,Térmica,48.14
+g01_0812_1161,SE/CO,Termo Norte II,Térmica,349.0
+g01_0606_1292,S,Canastra,Hídrica,44.8
+g01_0608_1266,S,Engenheiro Henrique Kotzian,Hídrica,13.0
+g01_0609_1267,S,Jacuí,Hídrica,180.0
+g01_0602_1230,S,Uruguaiana,Térmica,639.9
+g01_0791_1430,NE,Porto de Sergipe I,Térmica,1593.2
+g01_0668_1339,SE/CO,Jaguari,Hídrica,27.6
+g01_0663_1333,SE/CO,Piratininga,Térmica,285.0

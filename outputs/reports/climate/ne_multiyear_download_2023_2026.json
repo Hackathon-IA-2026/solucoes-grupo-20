@@ -1,0 +1,95 @@
+{
+  "subsystem_id": "NE",
+  "points": 36,
+  "start_date": "2023-01-01",
+  "end_date": "2026-09-16",
+  "target_years": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "baseline_years": [
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "e2_records": 180,
+  "e3_records": 648,
+  "e2_annual_partitions": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "e3_annual_partitions": [
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "batch_size_hourly": 6,
+  "batch_size_daily": 24,
+  "archive_endpoint": "http://127.0.0.1:37469/v1/archive",
+  "history_mode": "local-first",
+  "history_backend_requested": "auto",
+  "history_backend_effective": "arco",
+  "arco_fallback_used": false,
+  "arco_provenance": {
+    "core": "ERA5-Land ARCO 0.1°",
+    "wind_gust": "ERA5 single-level ARCO 0.25° nearest-neighbour when requested",
+    "adapter_contract": "Open-Meteo-compatible local HTTP response; existing annual point cache/manifests unchanged"
+  },
+  "request_delay_seconds": 2.0,
+  "max_retries": 10,
+  "cooldown_after_429": 3,
+  "cooldown_seconds": 90.0,
+  "archive_lag_days": 5,
+  "cache_hits_e2": 180,
+  "cache_hits_e3": 648,
+  "rate_limit": {
+    "consecutive_429": 0,
+    "total_429": 0,
+    "cooldowns": 0,
+    "last_status": null
+  },
+  "spatial_resolution_deg": 0.1,
+  "cache_layout": "persistent local Climate Store / annual/channel/point + incremental current-year deltas",
+  "resume_policy": "LOCAL_FIRST; cache hits are reused; only uncovered point/date ranges access the selected historical backend",
+  "points_file": "data/processed/grid/climate_points_ne_01deg.csv",
+  "e2_manifest": "outputs/reports/climate/ne_e2_download_2023_2026.json",
+  "e3_manifest": "outputs/reports/climate/ne_e3_download_2023_2026.json",
+  "checkpoint": "outputs/reports/climate/ne_annual_download_checkpoint.json",
+  "legacy_cache_migration": {
+    "e2": {
+      "examined": 0,
+      "migrated": 0,
+      "created": 0
+    },
+    "e3": {
+      "examined": 0,
+      "migrated": 0,
+      "created": 0
+    }
+  }
+}

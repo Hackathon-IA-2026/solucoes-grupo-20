@@ -1,0 +1,10 @@
+{
+  "points_file": "data/processed/grid/climate_points_n_01deg.csv",
+  "rows_before": 27,
+  "duplicate_cell_ids": 0,
+  "duplicate_rows": 0,
+  "discarded_points": [],
+  "quarantined_hourly_files": 0,
+  "quarantined_daily_files": 0,
+  "status": "NO_DUPLICATES"
+}

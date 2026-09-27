@@ -1,0 +1,32 @@
+{
+  "mode": "adaptive",
+  "stride_cells": 100,
+  "grid_resolution_deg": 0.1,
+  "crs": "EPSG:4326",
+  "rows": 221,
+  "regions": {
+    "N": {
+      "rows": 27,
+      "asset_cells": 23,
+      "path": "data/processed/grid/climate_points_n_01deg.csv"
+    },
+    "NE": {
+      "rows": 36,
+      "asset_cells": 35,
+      "path": "data/processed/grid/climate_points_ne_01deg.csv"
+    },
+    "SE/CO": {
+      "rows": 115,
+      "asset_cells": 113,
+      "path": "data/processed/grid/climate_points_seco_01deg.csv"
+    },
+    "S": {
+      "rows": 43,
+      "asset_cells": 43,
+      "path": "data/processed/grid/climate_points_s_01deg.csv"
+    }
+  },
+  "output": "data/processed/grid/climate_points_01deg.csv",
+  "generation_asset_cells": "data/processed/assets/generation_asset_cells.csv",
+  "warning": "adaptive mode materializes exact 0.1-degree cells on a deterministic spatial lattice plus all generation-asset cells; use --mode full to request every mapped Brazil grid cell, which is much more expensive."
+}

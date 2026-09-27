@@ -82,9 +82,14 @@ def _hourly_payload(frame: pd.DataFrame) -> list[dict[str, Any]]:
             'dynamic_rs_kwh': dynamic,
             'consumption_kwh': float(item['consumption_kwh']),
             'optimized_consumption_kwh': float(item['optimized_consumption_kwh']),
+            'portfolio_before_mw': float(item['portfolio_before_mw']),
+            'portfolio_after_mw': float(item['portfolio_after_mw']),
             'multiplier': float(item['final_multiplier']),
             'demand_pressure': float(item['demand_pressure']),
             'demand_p50_mw': float(item['demand_p50_mw']),
+            'dessem_programmed_load_mw': float(item['dessem_programmed_load_mw']),
+            'dessem_relative_gap_pct': float(item['dessem_relative_gap_pct']),
+            'supply_pressure': float(item['supply_pressure']),
             'demand_context': context,
             'demand_reference_n': reference_n,
             'delta_pct': 100 * (dynamic / base - 1) if base else 0,
@@ -188,6 +193,9 @@ class SimulationApi(APIView):
                 mode=payload['mode'],
                 replay_key=payload.get('replay_key') or None,
                 flexible_fraction=payload['flexible_pct'] / 100,
+                optimization_objective=payload['optimization_objective'],
+                portfolio_customers=payload['portfolio_customers'],
+                participation_pct=payload['participation_pct'],
             )
         except (ValueError, KeyError) as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)

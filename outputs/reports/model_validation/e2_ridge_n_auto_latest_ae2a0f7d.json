@@ -1,0 +1,47 @@
+{
+  "validation_slug": "e2_ridge_n_auto_latest_ae2a0f7d",
+  "experiment": "E2",
+  "algorithm": "ridge",
+  "subsystem_id": "N",
+  "history_start_requested": null,
+  "history_end_requested": null,
+  "load_period_effective": {
+    "start": "2023-01-01 03:00:00+00:00",
+    "end": "2026-09-16 23:00:00+00:00",
+    "rows": 162585
+  },
+  "climate_period_effective": {
+    "start": "2023-01-01 00:00:00+00:00",
+    "end": "2026-09-16 23:00:00+00:00",
+    "rows": 130068
+  },
+  "availability_window": {
+    "requested_start": null,
+    "requested_end": null,
+    "load_start": "2023-01-01 03:00:00+00:00",
+    "load_end": "2026-09-20 02:00:00+00:00",
+    "climate_start": "2023-01-01 00:00:00+00:00",
+    "climate_end": "2026-09-16 23:00:00+00:00",
+    "effective_start": "2023-01-01 03:00:00+00:00",
+    "effective_end": "2026-09-16 23:00:00+00:00",
+    "adjusted_to_common_overlap": true
+  },
+  "test_hours": 720,
+  "calibration_hours": 720,
+  "metrics": {
+    "subsystem_id": "N",
+    "experiment": "E2",
+    "segment": "ALL",
+    "horizon": "ALL",
+    "n_rows": 720.0,
+    "MAE": 160.14426277410374,
+    "RMSE": 226.3435737898049,
+    "WAPE": 0.0164431289290699,
+    "p10_p90_coverage": 0.8541666666666666,
+    "algorithm": "ridge"
+  },
+  "xgboost_params": null,
+  "ridge_alpha": 1.0,
+  "metrics_output": "outputs/metrics/model_validation/auto_e2_ridge_n_2023_2026_metrics.csv",
+  "predictions_output": "outputs/metrics/model_validation/auto_e2_ridge_n_2023_2026_predictions.parquet"
+}

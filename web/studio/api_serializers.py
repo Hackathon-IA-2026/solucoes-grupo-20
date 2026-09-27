@@ -14,13 +14,18 @@ class SimulationRequestSerializer(serializers.Serializer):
     mode = serializers.ChoiceField(choices=('replay', 'operational'), default='replay')
     replay_key = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     flexible_pct = serializers.FloatField(min_value=0, max_value=80, default=20)
+    optimization_objective = serializers.ChoiceField(choices=('cost', 'flatten'), default='cost')
+    portfolio_customers = serializers.IntegerField(min_value=1, max_value=1_000_000, default=1000)
+    participation_pct = serializers.FloatField(min_value=0, max_value=100, default=100)
 
 
 class SimulationResponseSerializer(serializers.Serializer):
     customer = serializers.DictField()
     concession = serializers.DictField(allow_null=True)
     optimization = serializers.DictField()
+    portfolio = serializers.DictField()
     window = serializers.DictField()
+    dessem = serializers.DictField()
     hourly = serializers.ListField(child=serializers.DictField())
     simulation_mode = serializers.CharField()
     display_timezone = serializers.CharField()
