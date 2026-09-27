@@ -1,0 +1,53 @@
+{
+  "validation_slug": "e3_xgboost_se_co_auto_latest_c4a63520",
+  "experiment": "E3",
+  "algorithm": "xgboost",
+  "subsystem_id": "SE/CO",
+  "history_start_requested": null,
+  "history_end_requested": null,
+  "load_period_effective": {
+    "start": "2023-01-01 03:00:00+00:00",
+    "end": "2026-09-16 23:00:00+00:00",
+    "rows": 162585
+  },
+  "climate_period_effective": {
+    "start": "2023-01-01 00:00:00+00:00",
+    "end": "2026-09-16 23:00:00+00:00",
+    "rows": 130068
+  },
+  "availability_window": {
+    "requested_start": null,
+    "requested_end": null,
+    "load_start": "2023-01-01 03:00:00+00:00",
+    "load_end": "2026-09-20 02:00:00+00:00",
+    "climate_start": "2023-01-01 00:00:00+00:00",
+    "climate_end": "2026-09-16 23:00:00+00:00",
+    "effective_start": "2023-01-01 03:00:00+00:00",
+    "effective_end": "2026-09-16 23:00:00+00:00",
+    "adjusted_to_common_overlap": true
+  },
+  "test_hours": 720,
+  "calibration_hours": 720,
+  "metrics": {
+    "subsystem_id": "SE/CO",
+    "experiment": "E3",
+    "segment": "ALL",
+    "horizon": "ALL",
+    "n_rows": 720.0,
+    "MAE": 1015.4703281032986,
+    "RMSE": 1475.3083813669898,
+    "WAPE": 0.022974132432506164,
+    "p10_p90_coverage": 0.6652777777777777,
+    "algorithm": "xgboost"
+  },
+  "xgboost_params": {
+    "n_estimators": 350,
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9
+  },
+  "ridge_alpha": null,
+  "metrics_output": "outputs/metrics/model_validation/auto_e3_xgboost_seco_2023_2026_metrics.csv",
+  "predictions_output": "outputs/metrics/model_validation/auto_e3_xgboost_seco_2023_2026_predictions.parquet"
+}

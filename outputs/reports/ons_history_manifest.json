@@ -1,0 +1,80 @@
+{
+  "start_year": 2023,
+  "end_year": 2026,
+  "source_timezone": "America/Sao_Paulo",
+  "years": [
+    {
+      "year": 2023,
+      "raw_path": "data/raw/ons/balance/BALANCO_ENERGIA_SUBSISTEMA_2023.parquet",
+      "downloaded": false,
+      "load_rows": 43800,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2024-01-01 02:00:00+00:00"
+    },
+    {
+      "year": 2024,
+      "raw_path": "data/raw/ons/balance/BALANCO_ENERGIA_SUBSISTEMA_2024.parquet",
+      "downloaded": false,
+      "load_rows": 43920,
+      "start_utc": "2024-01-01 03:00:00+00:00",
+      "end_utc": "2025-01-01 02:00:00+00:00"
+    },
+    {
+      "year": 2025,
+      "raw_path": "data/raw/ons/balance/BALANCO_ENERGIA_SUBSISTEMA_2025.parquet",
+      "downloaded": false,
+      "load_rows": 43800,
+      "start_utc": "2025-01-01 03:00:00+00:00",
+      "end_utc": "2026-01-01 02:00:00+00:00"
+    },
+    {
+      "year": 2026,
+      "raw_path": "data/raw/ons/balance/BALANCO_ENERGIA_SUBSISTEMA_2026.parquet",
+      "downloaded": true,
+      "load_rows": 31440,
+      "start_utc": "2026-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00"
+    }
+  ],
+  "load_rows": 162960,
+  "supply_rows": 162960,
+  "coverage": [
+    {
+      "subsystem_id": "N",
+      "rows": 32592,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00",
+      "missing_hours_between_rows": 0
+    },
+    {
+      "subsystem_id": "NE",
+      "rows": 32592,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00",
+      "missing_hours_between_rows": 0
+    },
+    {
+      "subsystem_id": "S",
+      "rows": 32592,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00",
+      "missing_hours_between_rows": 0
+    },
+    {
+      "subsystem_id": "SE/CO",
+      "rows": 32592,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00",
+      "missing_hours_between_rows": 0
+    },
+    {
+      "subsystem_id": "SIN",
+      "rows": 32592,
+      "start_utc": "2023-01-01 03:00:00+00:00",
+      "end_utc": "2026-09-20 02:00:00+00:00",
+      "missing_hours_between_rows": 0
+    }
+  ],
+  "load_output": "data/processed/demand/load_hourly.parquet",
+  "supply_output": "data/processed/generation/supply_by_subsystem_hourly.parquet"
+}

@@ -183,6 +183,9 @@ def product(request):
     monthly_kwh=request.POST.get('monthly_kwh','300') if request.method=='POST' else '300'
     customer_type=request.POST.get('customer_type','residential') if request.method=='POST' else 'residential'
     flexible_pct=request.POST.get('flexible_pct','20') if request.method=='POST' else '20'
+    optimization_objective=request.POST.get('optimization_objective','flatten') if request.method=='POST' else 'flatten'
+    portfolio_customers=request.POST.get('portfolio_customers','1000') if request.method=='POST' else '1000'
+    participation_pct=request.POST.get('participation_pct','50') if request.method=='POST' else '50'
     info=distributor_info(selected_cnpj) if selected_cnpj else None
     if info and not selected_region:selected_region=str(info.get('subsystem_id') or '')
 
@@ -199,7 +202,7 @@ def product(request):
             if not selected_profile:raise ValueError('Selecione um perfil tarifário.')
             flex=float(flexible_pct)/100.0
             if not 0<=flex<=0.80:raise ValueError('Carga flexível deve ficar entre 0% e 80%.')
-            result,frame=simulate_customer(region=selected_region,cnpj=selected_cnpj,distributor=selected_distributor,profile=selected_profile,monthly_kwh=float(monthly_kwh),customer_type=customer_type,mode=mode,replay_key=selected_replay,flexible_fraction=flex)
+            result,frame=simulate_customer(region=selected_region,cnpj=selected_cnpj,distributor=selected_distributor,profile=selected_profile,monthly_kwh=float(monthly_kwh),customer_type=customer_type,mode=mode,replay_key=selected_replay,flexible_fraction=flex,optimization_objective=optimization_objective,portfolio_customers=int(portfolio_customers),participation_pct=float(participation_pct))
             for _,r in frame.iterrows():
                 local=pd.Timestamp(r['interval_start_utc']).tz_convert(DISPLAY_TIMEZONE)
                 flags=r.get('quality_flags','[]')
@@ -211,6 +214,10 @@ def product(request):
                     reference_n=int(n) if n is not None else None
                 except Exception:pass
                 hourly.append({'time':local.strftime('%d/%m %Hh'),'local_iso':local.isoformat(),'base':float(r['base_total_rs_kwh']),'dynamic':float(r['dynamic_tariff_rs_kwh']),'consumption':float(r['consumption_kwh']),'optimized_consumption':float(r['optimized_consumption_kwh']),'multiplier':float(r['final_multiplier']),'demand_pressure':float(r['demand_pressure']),'demand_mw':float(r['demand_p50_mw']),'demand_context':context,'demand_reference_n':reference_n,'delta_pct':100*(float(r['dynamic_tariff_rs_kwh'])/float(r['base_total_rs_kwh'])-1) if float(r['base_total_rs_kwh']) else 0})
+                hourly[-1].update(dessem_mw=float(r['dessem_programmed_load_mw']), supply_pressure=float(r['supply_pressure']), dessem_gap_pct=float(r['dessem_relative_gap_pct']))
+                hourly[-1].update(portfolio_before_mw=float(r['portfolio_before_mw']), portfolio_after_mw=float(r['portfolio_after_mw']))
+                actual=r.get('actual_load_mw')
+                hourly[-1].update(actual_mw=float(actual) if pd.notna(actual) else None)
         except Exception as e:error=str(e)
 
     return render(request,'studio/product.html',{
@@ -218,6 +225,7 @@ def product(request):
         'selected_region':selected_region,'selected_cnpj':selected_cnpj,'selected_distributor':selected_distributor,'selected_profile':selected_profile,'selected_info':info,'monthly_kwh':monthly_kwh,'customer_type':customer_type,
         'active_model':active_model(),'tariffs_ready':(ROOT/'data/processed/tariff/base_tariffs.parquet').exists(),'simulation_mode':mode,'replay_windows':windows,'selected_replay':selected_replay,'selected_window':selected_window,
         'operational_status':op_status,'display_timezone':DISPLAY_TIMEZONE,'effective_date':effective.isoformat() if effective else '', 'flexible_pct':flexible_pct,
+        'optimization_objective':optimization_objective,'portfolio_customers':portfolio_customers,'participation_pct':participation_pct,
     })
 
 

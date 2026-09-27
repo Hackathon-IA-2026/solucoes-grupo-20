@@ -7,6 +7,16 @@ sources:
     availability_class: observed_revised
     allowed_roles: [target_history, observed_supply_context]
     forbidden_roles: [future_generation_feature]
+  ONS_DESSEM_BALANCO_GERAL:
+    native_resolution: 30min
+    canonical_resolution: 1h
+    key: [interval_start_utc, subsystem_id]
+    required_source_columns: [din_programacaodia, num_patamar, cod_subsistema, val_demanda, val_geracao_renovavel, val_geracao_hidraulica, val_geracao_termica, val_cons_elevatoria]
+    availability_class: captured_programming_snapshot
+    allowed_roles: [programmed_demand_reference, experimental_tariff_signal, explicit_retrospective_scenario]
+    forbidden_roles: [available_generation_capacity, verified_reserve, unverified_asof_training_feature]
+    temporal_policy: captured_at_utc_is_not_historical_issue_time
+    attribution: ONS Dados Abertos, CC-BY
   CLIMATE_HISTORICAL:
     native_resolution: 1h
     canonical_resolution: 1h

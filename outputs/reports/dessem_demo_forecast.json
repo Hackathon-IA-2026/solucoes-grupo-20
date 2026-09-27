@@ -1,0 +1,7 @@
+{
+  "issue_time_utc": "2026-09-15 02:00:00+00:00",
+  "rows": 24,
+  "model_family_id": "E3_SECO_DIRECT_V1_4_0",
+  "weather_mode": "PERFECT_WEATHER_BACKTEST",
+  "output": "data/processed/demand/e3_dessem_demo_forecast_24h.parquet"
+}

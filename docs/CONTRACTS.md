@@ -28,6 +28,14 @@ Todos usam:
 - campos específicos de geração/transmissão em `asset_exposure_v1`: podem ser `null` quando não aplicáveis ao tipo de ativo.
 - `tariff_v1.supply_pressure` e `economic_signal`: podem ser `null`; o Motor 2 deve aplicar seus guardrails/fallback conforme configuração.
 
+O produto exige DESSEM completo para as 24 horas, embora o contrato e a biblioteca
+continuem aceitando `null`. Com `DESSEM_SCHEDULE_COMPARISON_PROXY`, o campo
+`supply_pressure` contém `D / (D + P)`, para demanda Predicta `D` e programação
+DESSEM `P` do mesmo subsistema/hora. Não é uma medida de capacidade ou reserva.
+Valores, método, URL, SHA256 e disponibilidade ficam em `main_drivers_json.dessem`,
+sem alterar o schema v1. `DESSEM_REPLAY_NOT_ASOF` identifica um cenário sem prova
+de disponibilidade histórica e bloqueia seu uso operacional.
+
 ## Regras adicionais verificadas
 
 `system_signal_v1`:

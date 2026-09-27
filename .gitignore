@@ -4,10 +4,17 @@ __pycache__/
 *.pyc
 .env
 .cdsapirc
-/data/
-outputs/
+
+
 *.partial
 
+# DATA
+# Ignora tudo dentro de data...
+data/*
+
+# ...exceto data/processed e todo o seu conteúdo
+!data/processed/
+!data/processed/**
 
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django

@@ -40,11 +40,19 @@
 - [x] construção de `system_signal_v1` a partir do piloto real;
 - [x] `D` calculado contra histórico comparável anterior ao issue time;
 - [x] `C` ligado ao contexto E3;
-- [x] `S = null` enquanto não houver oferta futura confiável;
+- [x] `S` aceita `null` na biblioteca; no produto usa comparação obrigatória com a programação DESSEM;
+- [x] download DESSEM por subsistema, média horária, snapshots e proveniência;
+- [x] comparação DESSEM versus Predicta na página do produto e na API;
 - [x] ANEEL TE/TUSD volumétricas normalizadas;
 - [x] separação de R$/kW;
 - [x] simulação cliente 24h e payload JSON para Django;
 - [ ] previsão meteorológica operacional em vez de PERFECT_WEATHER_BACKTEST;
-- [ ] oferta futura DESSEM validada;
+- [ ] disponibilidade DESSEM comprovada no instante de emissão para uma execução operacional;
 - [ ] mapeamento localização -> distribuidora automatizado;
-- [ ] Django.
+- [x] demonstração Django retrospectiva com DESSEM.
+
+Atualização DESSEM de 26/09/2026: 488 dias preparados, 58.560 linhas horárias
+incluindo SIN, com lacunas documentadas. A demo SE/CO de 15/09/2026 usa modelo
+congelado, clima observado e DESSEM capturado posteriormente. Os testes confirmam
+estrutura e integração, não ganho de acurácia, reserva ou economia comprovada.
+Comandos e limites: [ponte operacional](MVP_OPERATIONAL_BRIDGE_v1.4.md).

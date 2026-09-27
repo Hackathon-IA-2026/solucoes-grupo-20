@@ -1,0 +1,9 @@
+{
+  "root": "data/climate_store/n",
+  "quarantine_root": "data/climate_store_quarantine/n/null_landmask",
+  "dry_run": false,
+  "scanned_json": 621,
+  "quarantined_files": 0,
+  "distinct_bad_coordinates": [],
+  "records": []
+}

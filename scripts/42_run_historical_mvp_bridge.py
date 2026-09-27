@@ -10,6 +10,7 @@ def run(cmd):
 def main():
     p=argparse.ArgumentParser(description='Bridge validated E3 backtest -> system_signal_v1 -> optional customer tariff simulation.')
     p.add_argument('--issue-time')
+    p.add_argument('--allow-dessem-replay',action='store_true',help='Explicitly allow a retrospective DESSEM snapshot without historical availability proof.')
     p.add_argument('--distributor')
     p.add_argument('--profile')
     p.add_argument('--monthly-kwh',type=float,default=300.0)
@@ -17,6 +18,7 @@ def main():
     a=p.parse_args();py=sys.executable
     cmd=[py,'scripts/39_build_real_system_signal.py']
     if a.issue_time:cmd+=['--issue-time',a.issue_time]
+    if a.allow_dessem_replay:cmd+=['--allow-dessem-replay']
     run(cmd)
     if a.distributor and not a.profile:
         run([py,'scripts/40_prepare_aneel_mvp.py','--distributor',a.distributor])

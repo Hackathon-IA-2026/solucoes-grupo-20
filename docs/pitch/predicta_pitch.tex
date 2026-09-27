@@ -1,0 +1,238 @@
+% Pitch Predicta — 5 minutos · Hackathon
+% Compilar: pdflatex predicta_pitch.tex (2x)
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usepackage{booktabs}
+
+% ---------- Tema ----------
+\usetheme{default}
+\usecolortheme{seagull}
+\definecolor{predicta}{HTML}{4F46E5}
+\definecolor{verde}{HTML}{059669}
+\definecolor{laranja}{HTML}{DC6B18}
+\definecolor{grafite}{HTML}{1F2937}
+\definecolor{cinza}{HTML}{64748B}
+\setbeamercolor{frametitle}{fg=predicta}
+\setbeamercolor{title}{fg=predicta}
+\setbeamercolor{structure}{fg=predicta}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \hfill\scriptsize\textcolor{cinza}{Predicta · Hackathon 2026 · \insertframenumber/\inserttotalframenumber}\hspace{2mm}\vspace{1mm}}
+\setbeamerfont{frametitle}{series=\bfseries,size=\Large}
+
+\title{\Huge Predicta}
+\subtitle{Tarifa dinâmica inteligente: prever a demanda, achatar o pico}
+\author{Equipe Predicta}
+\date{}
+
+\begin{document}
+
+% ---------- Slide 0 · Capa ----------
+\begin{frame}
+  \titlepage
+  \centering
+  \textcolor{cinza}{Demanda energética, clima e operação do sistema}
+\end{frame}
+
+% ---------- Slide 1 · Problema (0:00–0:40) ----------
+\begin{frame}{O sistema é dimensionado pelo pior dia}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \vspace{2mm}
+      \begin{itemize}\setlength\itemsep{3mm}
+        \item \textbf{Demanda $\neq$ consumo}: dois dias com o mesmo total de kWh podem exigir condições operativas muito diferentes.
+        \item \textbf{Calor extremo concentra carga} em poucas horas — o pico define o custo de rede, geração e reserva.
+        \item \textbf{O consumidor não tem incentivo} para sair do pico: a tarifa que ele vê é plana.
+      \end{itemize}
+      \vspace{3mm}
+      \begin{beamercolorbox}[rounded=true,sep=3mm]{block body}
+        \centering\textbf{\textcolor{laranja}{``Dimensionado pelo pior dia,\\ cobrado como se todo dia fosse igual.''}}
+      \end{beamercolorbox}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      % Espaço para gráfico: curva de carga com pico destacado (screenshot /territorio ou ilustração)
+      \centering
+      \begin{tikzpicture}[scale=0.9]
+        \draw[->,thick,cinza] (0,0) -- (5.2,0) node[below left,font=\scriptsize]{hora};
+        \draw[->,thick,cinza] (0,0) -- (0,3.2) node[left,font=\scriptsize]{MW};
+        \draw[very thick,predicta] plot[smooth] coordinates {(0.2,1.2)(1,0.9)(2,1.3)(3,2.0)(3.8,2.8)(4.4,2.2)(5,1.4)};
+        \draw[dashed,laranja,thick] (0,2.8) -- (5.2,2.8) node[above left,font=\scriptsize\bfseries,text=laranja]{pico dimensiona tudo};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------- Slide 2 · Solução: os dois motores (0:40–1:50) ----------
+\begin{frame}{A solução: dois motores, um sinal auditável}
+  \centering
+  \begin{tikzpicture}[
+      font=\scriptsize,
+      fonte/.style={draw=cinza,rounded corners=1pt,fill=white,minimum width=2.55cm,minimum height=0.52cm,align=center},
+      motor/.style={draw=predicta,very thick,rounded corners=3pt,fill=predicta!8,minimum width=3.1cm,minimum height=2.9cm,align=center},
+      saida/.style={draw=verde,thick,rounded corners=2pt,fill=verde!8,minimum width=2.9cm,minimum height=1.15cm,align=center},
+      seta/.style={-{Stealth[length=2.5mm]},thick,grafite}]
+    % Fontes de dados (colocar logos aqui)
+    \node[fonte] (f1) at (0,2.4) {ONS · Carga};
+    \node[fonte] (f2) at (0,1.7) {ONS · Geração};
+    \node[fonte] (f3) at (0,1.0) {ONS · DESSEM};
+    \node[fonte] (f4) at (0,0.3) {ANEEL · Tarifas};
+    \node[fonte] (f5) at (0,-0.4) {ERA5-Land · Clima 0,1$^{\circ}$};
+    \node[fonte] (f6) at (0,-1.1) {Ativos geoespaciais};
+    \node[fonte,dashed] (f7) at (0,-1.8) {Open-Meteo forecast$^{*}$};
+    % Motor 1
+    \node[motor] (m1) at (4.0,0.3) {\textbf{\normalsize Motor 1 · SIN}\\[1.5mm] Previsão de demanda\\ 24h por subsistema\\ (p10 · p50 · p90)\\[1mm] pressão de oferta\\ exposição climática};
+    % Sinal
+    \node[draw=laranja,very thick,rounded corners=2pt,fill=laranja!10,minimum height=0.8cm,align=center] (sig) at (7.6,0.3) {\textbf{system\_signal\_v1}\\ sinal horário auditável};
+    % Motor 2
+    \node[motor] (m2) at (11.2,0.3) {\textbf{\normalsize Motor 2 · Tarifa}\\[1.5mm] \textbf{Guardrails:}\\ piso/teto 0,85–1,30$\times$\\ rampa máx. $\pm$10\%/h\\ fatura média neutra\\ trava de +20\%/fatura\\ falhou o dado? $\to$ 1,0$\times$};
+    % Saídas
+    \node[saida] (s1) at (14.6,1.3) {\textbf{Consumidor}\\ quando gastar menos};
+    \node[saida] (s2) at (14.6,-0.7) {\textbf{Distribuidora}\\ curva achatada};
+    % Setas
+    \foreach \f in {f1,f2,f3,f4,f5,f6,f7} \draw[seta,cinza] (\f.east) -- ($(m1.west)+(0,0)$);
+    \draw[seta,very thick,laranja] (m1) -- (sig);
+    \draw[seta,very thick,laranja] (sig) -- (m2);
+    \draw[seta,verde] (m2.east) -- (s1.west);
+    \draw[seta,verde] (m2.east) -- (s2.west);
+  \end{tikzpicture}
+
+  \vspace{1mm}
+  {\scriptsize\textcolor{cinza}{$^{*}$previsão meteorológica operacional: em integração (roadmap). Todas as demais fontes já alimentam o MVP.}}
+\end{frame}
+
+% ---------- Slide 3 · Demo (1:50–2:30) ----------
+\begin{frame}{Demo ao vivo · o produto funcionando}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \vspace{4mm}
+      \textbf{Roteiro (40s):}
+      \begin{enumerate}\setlength\itemsep{2mm}
+        \item Escolher a distribuidora no mapa real de concessões (ANEEL);
+        \item Simular um dia real: \textbf{DESSEM $\times$ Predicta $\times$ Realizado};
+        \item Card do consumidor: \textbf{economia potencial R\$/mês};
+        \item Aba da carteira: \textbf{alívio de pico em MW} com a adesão simulada.
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \vspace{4mm}
+      % Substituir pelo screenshot de backup da tela /produto/
+      \begin{beamercolorbox}[rounded=true,sep=8mm]{block body}
+        \centering\textcolor{cinza}{[screenshot de backup\\ da tela /produto/]}
+      \end{beamercolorbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------- Slide 4 · Confiança (2:30–3:10) ----------
+\begin{frame}{Dá para confiar? Cada número tem origem}
+  \begin{columns}[T]
+    \begin{column}{0.31\textwidth}
+      \centering
+      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{1};\\[2mm]
+      \textbf{Fontes oficiais}\\[1mm]
+      {\small Tudo vem de ONS, ANEEL e bases climáticas públicas. Nada inventado.}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering
+      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{2};\\[2mm]
+      \textbf{``Nota fiscal'' de dados}\\[1mm]
+      {\small Cada tarifa guarda o carimbo de origem de cada insumo. Qualquer valor pode ser reproduzido e auditado depois.}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering
+      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{3};\\[2mm]
+      \textbf{Testado contra a realidade}\\[1mm]
+      {\small Modelo congelado e confrontado com 30 dias reais que ele nunca viu.}
+    \end{column}
+  \end{columns}
+  \vspace{6mm}
+  \centering
+  \begin{beamercolorbox}[rounded=true,sep=4mm]{block body}
+    \centering
+    {\LARGE\textbf{\textcolor{verde}{Erro de previsão: metade do método tradicional}}}\\[2mm]
+    {\normalsize 2,3\% vs 4,5\% no Sudeste/Centro-Oeste · 3,3\% vs 6,7\% no Sul}\\[1mm]
+    {\footnotesize\textcolor{cinza}{e nas horas de calor extremo — quando mais importa — o erro se mantém em $\approx$2\%}}
+  \end{beamercolorbox}
+\end{frame}
+
+% ---------- Slide 5 · Modelo de negócio (3:10–3:50) ----------
+\begin{frame}{Quem usa, quem paga, quem ganha}
+  \centering
+  \begin{tikzpicture}[font=\small,
+      caixa/.style={draw=predicta,thick,rounded corners=3pt,fill=predicta!6,minimum width=4.2cm,minimum height=2.5cm,align=center},
+      seta/.style={-{Stealth[length=2.5mm]},thick,cinza}]
+    \node[caixa] (dist) at (0,0) {\textbf{Distribuidora}\\[1.5mm] paga \textbf{setup} + \textbf{fee de serviço}\\[1mm] ganha achatando a curva:\\ mais venda na ociosidade,\\ menos estresse no pico};
+    \node[caixa] (cons) at (6.4,0) {\textbf{Consumidor}\\[1.5mm] previsão 24h \textbf{grátis}\\ via distribuidora\\[1mm] horizonte estendido +\\ otimização = \textbf{fee premium} opcional};
+    \node[caixa,fill=verde!8,draw=verde] (sys) at (12.8,0) {\textbf{Sistema elétrico}\\[1.5mm] pico menor $\to$ menos\\ despacho térmico caro,\\ menos investimento\\ em rede ociosa};
+    \draw[seta] (dist) -- (cons);
+    \draw[seta] (cons) -- (sys);
+  \end{tikzpicture}
+  \vspace{4mm}
+
+  {\small\textcolor{cinza}{Receita recorrente para a Predicta · payback da distribuidora vem do custo evitado de pico.}}
+\end{frame}
+
+% ---------- Slide 6 · Viabilidade e roadmap (3:50–4:25) ----------
+\begin{frame}{MVP funcional hoje, piloto amanhã}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\textcolor{verde}{O que já roda hoje}}
+      \begin{itemize}\setlength\itemsep{1.5mm}
+        \item Pipeline completo: dados oficiais $\to$ previsão $\to$ tarifa $\to$ web;
+        \item 4 subsistemas do SIN, histórico 2023--2026;
+        \item Simulador de cliente e de carteira com dados reais;
+        \item API REST pronta para integrar ao billing.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{\textcolor{laranja}{Próximos passos (honestos)}}
+      \begin{itemize}\setlength\itemsep{1.5mm}
+        \item Previsão meteorológica ao vivo (código pronto, falta operação);
+        \item Operação agendada 24/7;
+        \item \textbf{Piloto com 1 distribuidora} em ambiente regulatório experimental (sandbox ANEEL).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{4mm}
+  \centering
+  {\small\textcolor{cinza}{Fase 1: piloto shadow (tarifa simulada em paralelo à real) $\to$ Fase 2: opt-in com clientes voluntários $\to$ Fase 3: escala.}}
+\end{frame}
+
+% ---------- Slide 7 · Inovação (4:25–4:50) ----------
+\begin{frame}{Por que isso é diferente}
+  \begin{table}
+    \centering\small
+    \begin{tabular}{lccc}
+      \toprule
+       & \textbf{Bandeiras} & \textbf{Tarifa branca} & \textbf{Predicta} \\
+      \midrule
+      Granularidade & mensal & 3 postos fixos & \textbf{horária} \\
+      Antecipação & reativa & estática & \textbf{preditiva 24h} \\
+      Considera clima & não & não & \textbf{sim} \\
+      Proteção ao consumidor & — & — & \textbf{guardrails} \\
+      Localizada por região & não & não & \textbf{sim} \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  \vspace{3mm}
+  \centering
+  {\small Dois motores desacoplados por contrato de dados: a distribuidora pluga o Motor 2\\ no billing existente sem reconstruir nada.}
+\end{frame}
+
+% ---------- Slide 8 · Fechamento (4:50–5:00) ----------
+\begin{frame}{}
+  \centering
+  \vspace{8mm}
+  {\Huge\textbf{\textcolor{predicta}{Predicta}}}\\[4mm]
+  {\Large A demanda vai continuar mudando com o clima.\\[1mm] A tarifa precisa aprender a acompanhar.}\\[8mm]
+  {\large\textcolor{verde}{\textbf{Buscamos uma distribuidora parceira para o piloto.}}}\\[6mm]
+  {\small\textcolor{cinza}{Equipe Predicta · contato}}
+\end{frame}
+
+\end{document}
+% Nota: os círculos numerados do slide 4 são marcadores — substituir por ícones (ex: pacote fontawesome5:
+% \usepackage{fontawesome5} e \faDatabase, \faStamp, \faCheckDouble) ou imagens da identidade visual.
