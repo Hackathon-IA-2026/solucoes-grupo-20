@@ -58,14 +58,14 @@ window.Predicta = (() => {
     (payload?.events||[]).forEach(ev=>{
       if(!Number.isFinite(Number(ev.longitude))||!Number.isFinite(Number(ev.latitude)))return;
       const [x,y]=project([Number(ev.longitude),Number(ev.latitude)]); const c=document.createElementNS(ns,'circle');
-      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r', ev.has_event?9:6); c.setAttribute('fill', ev.color||'#94a3b8'); c.setAttribute('class',`territory-point event ${ev.event_type||'none'}`);
+      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r', ev.has_event?9:6); c.setAttribute('fill', ev.color||'#7c869e'); c.setAttribute('class',`territory-point event ${ev.event_type||'none'}`);
       c.addEventListener('mousemove',e=>{if(!tooltip)return; tooltip.hidden=false; tooltip.innerHTML=`<b>${ev.name||'Ponto climático'}</b><br>${ev.event_label||'Sem evento'}${ev.state?` · ${ev.state}`:''}${Number.isFinite(Number(ev.temperature_max_anomaly_c))?`<br>anomalia Tmax: ${Number(ev.temperature_max_anomaly_c).toFixed(1)}°C`:''}${Number.isFinite(Number(ev.precipitation_sum))?`<br>chuva diária: ${Number(ev.precipitation_sum).toFixed(1)} mm`:''}${Number.isFinite(Number(ev.wind_gusts_10m_max))?`<br>rajada máx: ${Number(ev.wind_gusts_10m_max).toFixed(1)} km/h`:''}`; const rect=svg.getBoundingClientRect(); tooltip.style.left=(e.clientX-rect.left+12)+'px'; tooltip.style.top=(e.clientY-rect.top+12)+'px'});
       c.addEventListener('mouseleave',()=>{if(tooltip)tooltip.hidden=true}); svg.appendChild(c);
     });
     (payload?.plants||[]).forEach(pl=>{
       if(!Number.isFinite(Number(pl.longitude))||!Number.isFinite(Number(pl.latitude)))return;
       const [x,y]=project([Number(pl.longitude),Number(pl.latitude)]); const c=document.createElementNS(ns,'circle');
-      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r', pl.near_event?4.8:3.8); c.setAttribute('fill', pl.color||'#334155'); c.setAttribute('class',`territory-point plant ${pl.near_event?'exposed':''}`);
+      c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r', pl.near_event?4.8:3.8); c.setAttribute('fill', pl.color||'#c3cad8'); c.setAttribute('class',`territory-point plant ${pl.near_event?'exposed':''}`);
       c.addEventListener('mousemove',e=>{if(!tooltip)return; tooltip.hidden=false; tooltip.innerHTML=`<b>${pl.name||'Usina'}</b><br>${pl.source||''}${pl.uf?` · ${pl.uf}`:''}${Number.isFinite(Number(pl.capacity_mw))?`<br>capacidade: ${Number(pl.capacity_mw).toFixed(0)} MW`:''}${Number.isFinite(Number(pl.generation_avg_mw))?`<br>geração média: ${Number(pl.generation_avg_mw).toFixed(0)} MW`:''}${pl.near_event?`<br><span style="color:#fecaca">próxima de ${pl.event_label||'evento'}${pl.event_point?` (${pl.event_point})`:''}${Number.isFinite(Number(pl.distance_to_event_km))?` · ${Number(pl.distance_to_event_km).toFixed(0)} km`:''}</span>`:''}`; const rect=svg.getBoundingClientRect(); tooltip.style.left=(e.clientX-rect.left+12)+'px'; tooltip.style.top=(e.clientY-rect.top+12)+'px'});
       c.addEventListener('mouseleave',()=>{if(tooltip)tooltip.hidden=true}); svg.appendChild(c);
     });

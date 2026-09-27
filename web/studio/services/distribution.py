@@ -81,6 +81,11 @@ def tariff_profiles_for_cnpj(cnpj:str,region:str|None=None,effective_date:date|N
     d=effective_date or (signal_date(region) if region else None) or date.today()
     vf=pd.to_datetime(df.valid_from,errors='coerce').dt.date;vt=pd.to_datetime(df.valid_to,errors='coerce').dt.date
     g=df[df.distributor_cnpj.eq(key)&vf.le(d)&vt.ge(d)].copy()
+    # A revised homologation (e.g. valid from 2026-08-26) supersedes the previous one
+    # (from 2026-04-22) even when both are still "valid" on d: keep only the latest start.
+    if not g.empty:
+        g['_vf']=pd.to_datetime(g.valid_from,errors='coerce')
+        g=g[g['_vf'].eq(g.groupby(['tariff_profile_id','distributor_id','tariff_post'])['_vf'].transform('max'))].drop(columns='_vf')
     # Product MVP: use tariff of application and volumetric single-post profiles only.
     if 'tariff_basis' in g.columns:
         b=g.tariff_basis.astype(str).str.casefold()

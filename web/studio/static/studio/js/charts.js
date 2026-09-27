@@ -1,6 +1,6 @@
 window.PredictaCharts = (() => {
   const NS='http://www.w3.org/2000/svg';
-  const palette=['#4f46e5','#059669','#dc6b18','#b42370','#64748b'];
+  const palette=['#7c869e','#39e67a','#ff9640','#7c7ff5','#f5d547'];
   function el(name,attrs={}){const n=document.createElementNS(NS,name);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n;}
   function fmt(v,o={}){if(v===null||v===undefined||Number.isNaN(v))return '';const num=Number(v);return (o.prefix||'')+num.toFixed(Math.abs(num)<1?3:2)+(o.suffix||'');}
   function multiLine(id,labels,series,o={}){
@@ -14,7 +14,7 @@ window.PredictaCharts = (() => {
     const maxTicks=o.responsive?Math.max(3,Math.floor((W-p.l-p.r)/70)):8;
     const tickStep=Math.max(1,Math.ceil(labels.length/maxTicks)); labels.forEach((lab,i)=>{if(i%tickStep&&i!==labels.length-1)return;const t=el('text',{x:x(i),y:H-22,'text-anchor':'middle',fill:'#7a8495','font-size':10});t.textContent=String(lab).replace('T',' ').slice(0,13);svg.appendChild(t)});
     series.forEach((s,si)=>{let d='';s.values.forEach((v,i)=>{if(v===null||v===undefined||!Number.isFinite(Number(v)))return;d+=(d?' L ':'M ')+x(i)+' '+y(Number(v))});svg.appendChild(el('path',{d,fill:'none',stroke:palette[si%palette.length],'stroke-width':2.5,'stroke-linejoin':'round','stroke-linecap':'round'}));});
-    let lx=p.l;series.forEach((s,si)=>{svg.appendChild(el('line',{x1:lx,x2:lx+18,y1:14,y2:14,stroke:palette[si%palette.length],'stroke-width':3}));const t=el('text',{x:lx+24,y:18,fill:'#4c5668','font-size':11});t.textContent=s.name;svg.appendChild(t);lx+=24+(s.name.length*8)+28;});
+    let lx=p.l;series.forEach((s,si)=>{svg.appendChild(el('line',{x1:lx,x2:lx+18,y1:14,y2:14,stroke:palette[si%palette.length],'stroke-width':3}));const t=el('text',{x:lx+24,y:18,style:'fill:var(--ink)','font-size':11});t.textContent=s.name;svg.appendChild(t);lx+=24+(s.name.length*8)+28;});
   }
   function lineFromJson(id,jsonId,o={}){const d=JSON.parse(document.getElementById(jsonId).textContent);multiLine(id,d.x,[{name:d.y_label||'valor',values:d.y}],o)}
   return {multiLine,lineFromJson};
