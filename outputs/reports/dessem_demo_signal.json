@@ -1,0 +1,17 @@
+{
+  "run_id": "dessem-demo-20260915",
+  "rows": 24,
+  "zones": [
+    "SE/CO"
+  ],
+  "valid": true,
+  "supply_pressure_policy": "DESSEM_SCHEDULE_COMPARISON_PROXY",
+  "dessem_schedule": "data/processed/generation/dessem_schedule_hourly.parquet",
+  "dessem_hours": 24,
+  "dessem_retrospective": true,
+  "observed_generation_context": true,
+  "climate_exposure_mean": 0.013251301467108378,
+  "demand_pressure_min": 0.2972972972972973,
+  "demand_pressure_max": 0.9324324324324325,
+  "output": "outputs/contracts/system_signal_v1.parquet"
+}

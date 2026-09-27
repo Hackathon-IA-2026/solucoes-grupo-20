@@ -1,0 +1,66 @@
+{
+  "status": "READY_LOCAL_ONLY",
+  "store_root": "data/climate_store",
+  "start_year": 2023,
+  "end_year": 2026,
+  "regions": {
+    "N": {
+      "ready": true,
+      "points": 27,
+      "target_window": {
+        "start": "2023-01-01",
+        "end": "2026-09-16"
+      },
+      "baseline_window": {
+        "start": "2013-01-01",
+        "end": "2025-12-31"
+      },
+      "missing_ranges": 0,
+      "sample_gaps": []
+    },
+    "NE": {
+      "ready": true,
+      "points": 36,
+      "target_window": {
+        "start": "2023-01-01",
+        "end": "2026-09-16"
+      },
+      "baseline_window": {
+        "start": "2013-01-01",
+        "end": "2025-12-31"
+      },
+      "missing_ranges": 0,
+      "sample_gaps": []
+    },
+    "SE/CO": {
+      "ready": true,
+      "points": 115,
+      "target_window": {
+        "start": "2023-01-01",
+        "end": "2026-09-16"
+      },
+      "baseline_window": {
+        "start": "2013-01-01",
+        "end": "2025-12-31"
+      },
+      "missing_ranges": 0,
+      "sample_gaps": []
+    },
+    "S": {
+      "ready": true,
+      "points": 43,
+      "target_window": {
+        "start": "2023-01-01",
+        "end": "2026-09-16"
+      },
+      "baseline_window": {
+        "start": "2013-01-01",
+        "end": "2025-12-31"
+      },
+      "missing_ranges": 0,
+      "sample_gaps": []
+    }
+  },
+  "missing_ranges": 0,
+  "ready_local_only": true
+}

@@ -1,0 +1,39 @@
+{
+  "subsystem_id": "SE/CO",
+  "target_years": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "rolling_baselines": {
+    "2023": {
+      "start": 2013,
+      "end": 2022
+    },
+    "2024": {
+      "start": 2014,
+      "end": 2023
+    },
+    "2025": {
+      "start": 2015,
+      "end": 2024
+    },
+    "2026": {
+      "start": 2016,
+      "end": 2025
+    }
+  },
+  "baseline_rows": 11040,
+  "daily_rows": 155825,
+  "hourly_rows": 32517,
+  "zone_rows": 32520,
+  "spatial_method": "GRID_01DEG_ACTIVE_CELLS",
+  "no_leakage": true,
+  "outputs": {
+    "baseline": "data/processed/climate/regions/seco/e3_temperature_baseline_monthly.parquet",
+    "daily": "data/processed/climate/regions/seco/e3_daily_context.parquet",
+    "hourly": "data/processed/climate/regions/seco/e3_zone_context_hourly.parquet",
+    "zone": "data/processed/climate/regions/seco/zone_climate_hourly_e3.parquet"
+  }
+}

@@ -10,8 +10,8 @@ import pandas as pd
 from django.conf import settings
 
 from motor_sin.common.io import read_table
-from motor_sin.signals.real_signal import build_real_system_signal
-from motor_tarifa.customer.optimize import optimize_flexible_consumption
+from motor_sin.signals.real_signal import build_real_system_signal, enrich_signal_with_dessem
+from motor_tarifa.customer.optimize import optimize_flexible_consumption, summarize_load_shift
 from motor_tarifa.customer.profiles import synthetic_daily_profile
 from motor_tarifa.customer.result import build_customer_result
 from motor_tarifa.pipeline import load_tariff_config, simulate_dynamic_tariff
@@ -33,6 +33,7 @@ E3_PREDICTIONS = ROOT / 'outputs/metrics/e3_real_pilot_predictions.parquet'
 LOAD_HISTORY = ROOT / 'data/processed/demand/load_hourly.parquet'
 E3_CLIMATE = ROOT / 'data/processed/climate/zone_climate_hourly_e3.parquet'
 SUPPLY_HISTORY = ROOT / 'data/processed/generation/supply_by_subsystem_hourly.parquet'
+DESSEM_SCHEDULE = ROOT / 'data/processed/generation/dessem_schedule_hourly.parquet'
 
 
 def _dataset(relative_path: str, local_path: Path) -> Path:
@@ -41,6 +42,11 @@ def _dataset(relative_path: str, local_path: Path) -> Path:
 
 def _path_exists(relative_path: str, local_path: Path) -> bool:
     return _dataset(relative_path, local_path).exists()
+
+
+def _dessem_schedule() -> pd.DataFrame:
+    path = _dataset('data/processed/generation/dessem_schedule_hourly.parquet', DESSEM_SCHEDULE)
+    return read_table(path) if path.exists() else pd.DataFrame()
 
 
 def available_regions():
@@ -113,6 +119,11 @@ def _window_descriptor(frame: pd.DataFrame, *, key: str, source: str, issue_time
 def replay_windows(region: str | None = None) -> list[dict]:
     """List historical 24h windows available for the product replay selector."""
     windows: list[dict] = []
+    schedule = _dessem_schedule()
+    if schedule.empty:
+        return windows
+    coverage = schedule[['interval_start_utc', 'subsystem_id']].copy()
+    coverage['interval_start_utc'] = pd.to_datetime(coverage['interval_start_utc'], utc=True)
     predictions_path = _dataset('outputs/metrics/e3_real_pilot_predictions.parquet', E3_PREDICTIONS)
     signal_path = _dataset('outputs/contracts/system_signal_v1.parquet', SIGNAL)
     if predictions_path.exists():
@@ -126,10 +137,11 @@ def replay_windows(region: str | None = None) -> list[dict]:
             p['issue_time_utc'] = pd.to_datetime(p['issue_time_utc'], utc=True, errors='coerce')
             p['interval_start_utc'] = pd.to_datetime(p['interval_start_utc'], utc=True, errors='coerce')
             p = p.dropna(subset=['issue_time_utc', 'interval_start_utc'])
+            p = p.merge(coverage, on=['interval_start_utc', 'subsystem_id'], how='inner', validate='many_to_one')
             for issue, g in p.groupby('issue_time_utc'):
                 g = g.drop_duplicates(['interval_start_utc', 'subsystem_id'])
                 if region:
-                    ok = len(g) == 24 and g['interval_start_utc'].nunique() == 24
+                    ok = len(g) == 24 and g['interval_start_utc'].nunique() == 24 and g['interval_start_utc'].sort_values().diff().dropna().eq(pd.Timedelta(hours=1)).all()
                 else:
                     counts = g.groupby('subsystem_id')['interval_start_utc'].nunique()
                     ok = bool(len(counts) and counts.max() >= 24)
@@ -140,9 +152,11 @@ def replay_windows(region: str | None = None) -> list[dict]:
     if not windows and signal_path.exists():
         s = read_table(signal_path)
         s = s[s['zone_type'].astype(str).eq('SUBSYSTEM')].copy()
+        s['interval_start_utc'] = pd.to_datetime(s['interval_start_utc'], utc=True)
+        s = s.merge(coverage.rename(columns={'subsystem_id': 'zone_id'}), on=['interval_start_utc', 'zone_id'], how='inner', validate='many_to_one')
         if region:
             s = s[s['zone_id'].astype(str).eq(str(region))]
-        if len(s) >= 24:
+        if len(s) >= 24 and s.sort_values('interval_start_utc').head(24)['interval_start_utc'].diff().dropna().eq(pd.Timedelta(hours=1)).all():
             windows.append(_window_descriptor(s.sort_values('interval_start_utc').head(24), key='CURRENT_SIGNAL_REPLAY', source='SYSTEM_SIGNAL_V1'))
     windows.sort(key=lambda x: x['local_start'])
     return windows
@@ -172,6 +186,10 @@ def operational_status(region: str) -> dict:
     if len(z) != 24:
         return {'available': False, 'reason': f'{region} não possui 24 horas operacionais publicadas em system_signal_v1.'}
     flags = _quality_flags(z)
+    if 'DESSEM_REPLAY_NOT_ASOF' in flags:
+        return {'available': False, 'reason': 'O DESSEM desta janela foi capturado depois da emissão da previsão; disponível somente como cenário retrospectivo.'}
+    if not z['supply_pressure'].notna().all() or not all('DESSEM_SCHEDULE_COMPARISON_PROXY' in json.loads(raw) for raw in z['quality_flags']):
+        return {'available': False, 'reason': 'A previsão operacional requer 24 horas de programação DESSEM válida.'}
     if 'PERFECT_WEATHER_BACKTEST_NOT_OPERATIONAL' in flags:
         return {
             'available': False,
@@ -209,7 +227,7 @@ def effective_date_for(region: str, mode: str = 'replay', replay_key: str | None
 def _signal_for_replay(region: str, replay_key: str | None) -> tuple[pd.DataFrame, dict]:
     w = replay_window(region, replay_key)
     if not w:
-        raise ValueError(f'Não há janela histórica completa de 24h para {region}.')
+        raise ValueError(f'Não há janela de 24h com previsão Predicta e DESSEM completos para {region}.')
     predictions_path = _dataset('outputs/metrics/e3_real_pilot_predictions.parquet', E3_PREDICTIONS)
     load_path = _dataset('data/processed/demand/load_hourly.parquet', LOAD_HISTORY)
     climate_path = _dataset('data/processed/climate/zone_climate_hourly_e3.parquet', E3_CLIMATE)
@@ -236,12 +254,19 @@ def _signal_for_replay(region: str, replay_key: str | None) -> tuple[pd.DataFram
             run_id=f"web-replay-{issue.strftime('%Y%m%dT%H%MZ')}",
             calendar_timezone=DISPLAY_TIMEZONE,
             observed_supply_backtest=supply,
+            dessem_schedule=_dessem_schedule(),
+            allow_dessem_replay=True,
+            require_dessem=True,
         )
         return signal, w
     z = _load_current_signal(region)
     if len(z) != 24:
         raise ValueError('system_signal_v1 de replay não possui 24 horas completas.')
-    return z, w
+    issue_raw = json.loads(z['main_drivers_json'].iloc[0]).get('dessem', {}).get('forecast_issue_time_utc')
+    return enrich_signal_with_dessem(
+        z, _dessem_schedule(), issue_time_utc=pd.Timestamp(issue_raw) if issue_raw else None,
+        allow_replay=True, required=True,
+    ), w
 
 
 def resolve_signal(region: str, mode: str = 'replay', replay_key: str | None = None) -> tuple[pd.DataFrame, dict]:
@@ -281,7 +306,14 @@ def simulate_customer(
     mode: str = 'replay',
     replay_key: str | None = None,
     flexible_fraction: float = 0.20,
+    optimization_objective: str = 'cost',
+    portfolio_customers: int = 1000,
+    participation_pct: float = 100.0,
 ):
+    if isinstance(portfolio_customers, bool) or not isinstance(portfolio_customers, int) or not 1 <= portfolio_customers <= 1_000_000:
+        raise ValueError('A carteira simulada deve ter entre 1 e 1.000.000 clientes inteiros.')
+    if not np.isfinite(participation_pct) or not 0 <= participation_pct <= 100:
+        raise ValueError('A adesão deve ficar entre 0% e 100%.')
     tariffs_path = _dataset('data/processed/tariff/base_tariffs.parquet', TARIFFS)
     if not tariffs_path.exists():
         raise ValueError('Tarifas processadas ainda não existem; prepare GeoJSON + tarifas ANEEL na etapa Dados.')
@@ -290,6 +322,11 @@ def simulate_customer(
     z = signal[(signal.zone_type.astype(str) == 'SUBSYSTEM') & (signal.zone_id.astype(str) == region)].copy()
     if len(z) != 24:
         raise ValueError(f'Região {region} não possui exatamente 24 horas de sinal para a janela escolhida.')
+    dessem = [json.loads(raw).get('dessem', {}) for raw in z['main_drivers_json']]
+    if not all('programmed_load_mw' in record for record in dessem):
+        raise ValueError('DESSEM obrigatório: a janela não contém a programação oficial completa.')
+    z['dessem_programmed_load_mw'] = [record['programmed_load_mw'] for record in dessem]
+    z['dessem_relative_gap_pct'] = [record['relative_gap_pct'] for record in dessem]
 
     # Validate the selected tariff agent still belongs to the clicked concession CNPJ.
     if 'distributor_cnpj' in tariffs.columns:
@@ -318,6 +355,7 @@ def simulate_customer(
         consumption.consumption_kwh.to_numpy(float),
         out.dynamic_tariff_rs_kwh.to_numpy(float),
         flexible_fraction=float(flexible_fraction),
+        objective=optimization_objective,
     )
     optimized = consumption[['interval_start_utc']].copy()
     optimized['optimized_consumption_kwh'] = optimized_values
@@ -339,16 +377,39 @@ def simulate_customer(
     result['simulation_mode'] = str(mode or 'replay').lower()
     result['display_timezone'] = DISPLAY_TIMEZONE
     result['window'] = window
+    result['dessem'] = {
+        'source': 'ONS_DESSEM_BALANCO_GERAL',
+        'hours': len(dessem),
+        'retrospective': any(record['mode'] == 'RETROSPECTIVE_SCENARIO' for record in dessem),
+        'captured_at_utc': max(record['available_at_utc'] for record in dessem),
+        'snapshot_sha256': sorted({record['snapshot_sha256'] for record in dessem}),
+        'source_urls': sorted({record['source_url'] for record in dessem}),
+    }
     result['simulation_scope_pt'] = 'Comparação experimental de 24h com TE+TUSD volumétricas; não é previsão integral de fatura regulada.'
 
     hourly = out.merge(consumption[['interval_start_utc', 'consumption_kwh']], on='interval_start_utc', how='left')
     hourly = hourly.merge(optimized, on='interval_start_utc', how='left')
     hourly = hourly.merge(
-        z[['interval_start_utc', 'demand_p50_mw', 'quality_flags']],
+        z[['interval_start_utc', 'demand_p50_mw', 'dessem_programmed_load_mw', 'dessem_relative_gap_pct', 'quality_flags']],
         on='interval_start_utc',
         how='left',
         validate='one_to_one',
+        suffixes=('_tariff', ''),
     )
+
+    # Realized ONS load is only available for replay windows; operational hours stay null.
+    obs_path = _dataset('data/processed/demand/load_hourly.parquet', LOAD_HISTORY)
+    if obs_path.exists():
+        obs = read_table(obs_path)
+        obs = obs[obs['subsystem_id'].astype(str).eq(str(region))][['interval_start_utc', 'load_mw']].copy()
+        obs['interval_start_utc'] = pd.to_datetime(obs['interval_start_utc'], utc=True, errors='coerce')
+        obs = obs.dropna(subset=['interval_start_utc']).drop_duplicates('interval_start_utc')
+        hourly = hourly.merge(
+            obs.rename(columns={'load_mw': 'actual_load_mw'}),
+            on='interval_start_utc', how='left', validate='one_to_one',
+        )
+    else:
+        hourly['actual_load_mw'] = np.nan
 
     original_dynamic = float((hourly['consumption_kwh'] * hourly['dynamic_tariff_rs_kwh']).sum())
     optimized_dynamic = float((hourly['optimized_consumption_kwh'] * hourly['dynamic_tariff_rs_kwh']).sum())
@@ -361,7 +422,33 @@ def simulate_customer(
         'potential_savings_24h_rs': potential_savings,
         'potential_savings_pct': (100.0 * potential_savings / original_dynamic) if original_dynamic else 0.0,
         'potential_savings_month_rs': potential_savings * 30.4375,
-        'method': 'SHIFT_FLEXIBLE_ENERGY_TO_CHEAPEST_HOURS_WITH_HEADROOM',
+        'method': ('MINIMIZE_VARIANCE_WITH_ENERGY_PEAK_AND_COST_CONSTRAINTS' if optimization_objective == 'flatten'
+                   else 'SHIFT_FLEXIBLE_ENERGY_TO_CHEAPEST_HOURS_WITH_HEADROOM'),
+        'load_shape': summarize_load_shift(hourly.consumption_kwh, hourly.optimized_consumption_kwh),
+        'is_illustrative': True,
+    }
+    participating = int(np.floor(portfolio_customers * participation_pct / 100 + 0.5))
+    portfolio_before = hourly.consumption_kwh.to_numpy(float) * portfolio_customers
+    portfolio_after = (
+        hourly.consumption_kwh.to_numpy(float) * (portfolio_customers - participating)
+        + hourly.optimized_consumption_kwh.to_numpy(float) * participating
+    )
+    shape = summarize_load_shift(portfolio_before, portfolio_after)
+    hourly['portfolio_before_mw'] = portfolio_before / 1000
+    hourly['portfolio_after_mw'] = portfolio_after / 1000
+    result['portfolio'] = {
+        'customer_count': portfolio_customers,
+        'participating_customers': participating,
+        'participation_pct': 100 * participating / portfolio_customers,
+        'requested_participation_pct': float(participation_pct),
+        'peak_before_mw': shape['peak_before_kw'] / 1000,
+        'peak_after_mw': shape['peak_after_kw'] / 1000,
+        'peak_reduction_mw': (shape['peak_before_kw'] - shape['peak_after_kw']) / 1000,
+        'energy_before_mwh': shape['energy_before_kwh'] / 1000,
+        'energy_after_mwh': shape['energy_after_kwh'] / 1000,
+        'load_shape': shape,
+        'profile_assumption': 'IDENTICAL_SYNTHETIC_HOURLY_CUSTOMER_PROFILES',
+        'scope': 'SIMULATED_PORTFOLIO_NOT_TOTAL_DISTRIBUTOR_LOAD',
         'is_illustrative': True,
     }
     return result, hourly

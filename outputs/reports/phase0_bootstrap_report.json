@@ -1,0 +1,43 @@
+{
+  "phase": "phase0_contracts",
+  "status": "ok",
+  "created_at_utc": "2026-09-21T23:47:35.342930+00:00",
+  "schemas": [
+    "contracts/schemas/grid_state_v1.schema.json",
+    "contracts/schemas/asset_exposure_v1.schema.json",
+    "contracts/schemas/system_signal_v1.schema.json",
+    "contracts/schemas/tariff_v1.schema.json"
+  ],
+  "validations": {
+    "system_signal_v1": {
+      "valid": true,
+      "rows": 120,
+      "errors": []
+    },
+    "tariff_v1": {
+      "valid": true,
+      "rows": 24,
+      "errors": []
+    },
+    "grid_state_v1": {
+      "valid": true,
+      "rows": 2,
+      "errors": []
+    },
+    "asset_exposure_v1": {
+      "valid": true,
+      "rows": 1,
+      "errors": []
+    }
+  },
+  "parquet": {
+    "system_signal_v1_example.parquet": {
+      "created": true,
+      "error": null
+    },
+    "tariff_v1_example.parquet": {
+      "created": true,
+      "error": null
+    }
+  }
+}

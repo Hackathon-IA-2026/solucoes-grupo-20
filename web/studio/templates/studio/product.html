@@ -28,12 +28,12 @@
   <form method="post" id="customer-form">{% csrf_token %}
     <div class="simulation-mode-box">
       <label class="field"><span>Modo</span><select name="simulation_mode" id="simulation-mode">
-        <option value="replay" {% if simulation_mode == 'replay' %}selected{% endif %}>Replay histórico validado</option>
+        <option value="replay" {% if simulation_mode == 'replay' %}selected{% endif %}>Cenário retrospectivo · DESSEM</option>
         <option value="operational" {% if simulation_mode == 'operational' %}selected{% endif %} {% if not operational_status.available %}disabled{% endif %}>Operacional · próximas 24h{% if not operational_status.available %} — indisponível{% endif %}</option>
-      </select></label>
-      <label class="field" id="replay-date-field"><span>Data do replay</span><select name="replay_issue" id="replay-date">
-        {% for w in replay_windows %}<option value="{{ w.key }}" data-effective="{{ w.local_date }}" {% if w.key == selected_replay %}selected{% endif %}>{{ w.label }}</option>{% empty %}<option value="">Nenhuma janela de 24h disponível</option>{% endfor %}
-      </select></label>
+      </select><small>Replay = demonstração retrospectiva. Operacional = forecast realmente disponível no instante de emissão.</small></label>
+      <label class="field" id="replay-date-field"><span>Data do replay · horário São Paulo</span><select name="replay_issue" id="replay-date">
+        {% for w in replay_windows %}<option value="{{ w.key }}" data-effective="{{ w.local_date }}" {% if w.key == selected_replay %}selected{% endif %}>{{ w.label }}</option>{% empty %}<option value="">Nenhuma janela completa com Predicta + DESSEM</option>{% endfor %}
+      </select><small>As datas exibidas já foram convertidas de UTC para {{ display_timezone }}.</small></label>
     </div>
     {% if not operational_status.available %}<p class="note">operacional indisponível: {{ operational_status.reason }}</p>{% endif %}
 
@@ -50,8 +50,17 @@
     <div class="tariff-preview"><div><span>TE</span><strong id="preview-te">—</strong></div><div><span>TUSD</span><strong id="preview-tusd">—</strong></div><div class="emphasis"><span>TE + TUSD</span><strong id="preview-total">—</strong></div><div><span>Data de referência</span><strong id="preview-effective">{% human_date effective_date %}</strong></div></div>
 
     <div class="two-fields"><label class="field"><span>Consumo mensal</span><div class="input-suffix"><input type="number" step="1" min="1" name="monthly_kwh" value="{{ monthly_kwh }}" required><b>kWh</b></div></label><label class="field"><span>Forma da curva</span><select name="customer_type"><option value="residential" {% if customer_type == 'residential' %}selected{% endif %}>Residencial</option><option value="commercial" {% if customer_type == 'commercial' %}selected{% endif %}>Comercial</option><option value="industrial_flat" {% if customer_type == 'industrial_flat' %}selected{% endif %}>Industrial plana</option></select></label></div>
-    <label class="field"><span>Consumo flexível</span><div class="input-suffix"><input type="number" step="5" min="0" max="80" name="flexible_pct" value="{{ flexible_pct }}" required><b>%</b></div></label>
-    <button class="button primary large" id="simulate-button" {% if not selected_cnpj %}disabled{% endif %}>Simular 24h</button>
+    <fieldset class="shift-objectives"><legend>Objetivo do deslocamento</legend>
+      <label><input type="radio" name="optimization_objective" value="flatten" {% if optimization_objective == 'flatten' %}checked{% endif %}><span>Suavizar a curva</span></label>
+      <label><input type="radio" name="optimization_objective" value="cost" {% if optimization_objective == 'cost' %}checked{% endif %}><span>Menor custo</span></label>
+    </fieldset>
+    <label class="field"><span>Parcela potencialmente flexível do consumo</span><div class="input-suffix"><input type="number" step="5" min="0" max="80" name="flexible_pct" value="{{ flexible_pct }}" required><b>%</b></div></label>
+    <div class="two-fields">
+      <label class="field"><span>Clientes na carteira simulada</span><input type="number" step="1" min="1" max="1000000" name="portfolio_customers" value="{{ portfolio_customers }}" required></label>
+      <label class="field"><span>Adesão hipotética</span><div class="input-suffix"><input type="number" step="1" min="0" max="100" name="participation_pct" value="{{ participation_pct }}" required><b>%</b></div></label>
+    </div>
+    <p class="chart-note">Carteira hipotética de perfis idênticos. Flexibilidade e adesão não foram medidas.</p>
+    <button class="button primary large" id="simulate-button" {% if not selected_cnpj %}disabled{% endif %}>Simular com DESSEM · 24h</button>
   </form>
 
   <details class="help"><summary>Como funciona</summary>
@@ -67,20 +76,73 @@
 </div>
 
 {% if result %}
-<section class="result-context"><b>{% if result.simulation_mode == 'replay' %}Replay histórico{% else %}Operacional{% endif %}</b><span>{{ result.window.label }} · {{ result.display_timezone }}</span></section>
+<section class="result-context"><b>{% if result.simulation_mode == 'replay' %}Replay histórico{% else %}Operacional{% endif %}</b><span>{{ result.window.label }} · {{ result.display_timezone }}</span><small>Todos os horários abaixo são locais. UTC fica apenas nos artefatos técnicos.</small></section>
+<section class="load-shift-section" id="load-shift-results" aria-labelledby="load-shift-title">
+  <div class="panel-head"><div><p class="eyebrow">Resposta da demanda · cenário simulado</p><h2 id="load-shift-title">Perfil de energia após deslocamento</h2><p>{{ result.window.label }} · {{ result.optimization.flexible_percent|floatformat:0 }}% de energia flexível · {% if result.optimization.objective == 'flatten' %}suavização sem aumento de custo{% else %}prioridade de menor custo{% endif %}</p></div></div>
+  <div class="curve-tabs" role="tablist" aria-label="Escala da curva de carga">
+    <button type="button" role="tab" id="consumer-curve-tab" aria-controls="consumer-curve-panel" aria-selected="true">Consumidor</button>
+    <button type="button" role="tab" id="portfolio-curve-tab" aria-controls="portfolio-curve-panel" aria-selected="false" tabindex="-1">Carteira simulada</button>
+  </div>
+  <div id="consumer-curve-panel" role="tabpanel" aria-labelledby="consumer-curve-tab">
+    {% with shape=result.optimization.load_shape %}
+    <p class="shape-verdict {% if shape.is_flatter %}improved{% endif %}">{% if shape.is_flatter %}Curva mais uniforme neste cenário{% else %}Sem achatamento neste cenário{% endif %}</p>
+    <div class="shift-metrics">
+      <div><span>Pico após deslocamento</span><strong>{{ shape.peak_after_kw|floatformat:3 }} kW</strong><small>Antes: {{ shape.peak_before_kw|floatformat:3 }} kW · média horária</small></div>
+      <div><span>Variação do pico</span><strong>{{ shape.peak_change_pct|floatformat:1 }}%</strong><small>Após × antes</small></div>
+      <div title="Demanda média dividida pelo pico da janela."><span>Fator de carga</span><strong>{{ shape.load_factor_after_pct|floatformat:1 }}%</strong><small>Antes: {{ shape.load_factor_before_pct|floatformat:1 }}%</small></div>
+      <div><span>Energia em 24h</span><strong>{{ shape.energy_after_kwh|floatformat:2 }} kWh</strong><small>Antes: {{ shape.energy_before_kwh|floatformat:2 }} kWh</small></div>
+    </div>
+    {% endwith %}
+    <p class="curve-unit">Energia por hora · kWh</p>
+    <div id="consumption-chart" class="chart load-curve" role="img" aria-label="Energia horária do consumidor antes e após deslocamento"></div>
+    <p class="chart-note">Perfil sintético individual · {{ result.optimization.actually_shifted_kwh|floatformat:2 }} kWh efetivamente deslocados · mesma tarifa nos dois cenários.</p>
+  </div>
+  <div id="portfolio-curve-panel" role="tabpanel" aria-labelledby="portfolio-curve-tab" hidden>
+    {% with portfolio=result.portfolio %}
+    <p class="portfolio-scope"><b>{{ portfolio.participating_customers }} participantes / {{ portfolio.customer_count }} clientes</b> · {{ portfolio.participation_pct|floatformat:1 }}% de adesão · {% if result.concession.sigla %}{{ result.concession.sigla }}{% else %}{{ result.customer.distributor_id }}{% endif %}</p>
+    <p class="shape-verdict {% if portfolio.load_shape.is_flatter %}improved{% endif %}">{% if portfolio.load_shape.is_flatter %}Curva mais uniforme neste cenário{% else %}Sem achatamento neste cenário{% endif %}</p>
+    <div class="shift-metrics">
+      <div><span>Pico da carteira após</span><strong>{{ portfolio.peak_after_mw|floatformat:3 }} MW</strong><small>Antes: {{ portfolio.peak_before_mw|floatformat:3 }} MW</small></div>
+      <div class="emphasis"><span>Alívio de pico</span><strong>{{ portfolio.peak_reduction_mw|floatformat:3 }} MW</strong><small>{{ portfolio.load_shape.peak_change_pct|floatformat:1 }}% · capacidade liberada na hora crítica</small></div>
+      <div title="Demanda média dividida pelo pico da janela."><span>Fator de carga</span><strong>{{ portfolio.load_shape.load_factor_after_pct|floatformat:1 }}%</strong><small>Antes: {{ portfolio.load_shape.load_factor_before_pct|floatformat:1 }}%</small></div>
+      <div><span>Energia em 24h</span><strong>{{ portfolio.energy_after_mwh|floatformat:2 }} MWh</strong><small>Antes: {{ portfolio.energy_before_mwh|floatformat:2 }} MWh · energia preservada</small></div>
+    </div>
+    {% endwith %}
+    <p class="curve-unit">Potência média horária · MW</p>
+    <div id="portfolio-chart" class="chart load-curve" role="img" aria-label="Carga da carteira simulada antes e após a adesão ao deslocamento"></div>
+    <p class="chart-note">Hipótese de perfis sintéticos idênticos. Não é a carga total ou medida da distribuidora; o efeito real depende da coincidência dos picos e da adesão observada.</p>
+  </div>
+</section>
+<section class="dessem-comparison" aria-labelledby="demand-comparison-title">
+  <div class="panel-head"><div><h2 id="demand-comparison-title">Demanda DESSEM × Predicta × Realizado</h2><p>{{ result.customer.subsystem_id }} · potência média horária em GW · programação ONS, previsão Predicta p50 e carga realizada</p></div></div>
+  {% if result.dessem.retrospective %}<p class="chart-note">Cenário retrospectivo. A disponibilidade histórica do snapshot DESSEM não foi comprovada; esta comparação não valida acurácia.</p>{% endif %}
+  <div id="demand-chart" class="chart" aria-label="Comparação horária da demanda programada DESSEM, da previsão Predicta e da carga realizada"></div>
+  <p class="chart-note">A série realizada (ONS) só aparece em replay histórico. Sinal tarifário experimental relativo à programação; não representa reserva de geração nem risco de falta de energia.</p>
+</section>
 <section class="result-hero result-hero-six">
   <div><span>Distribuidora</span><strong>{% if result.concession.sigla %}{{ result.concession.sigla }}{% else %}{{ result.customer.distributor_id }}{% endif %}</strong><small>{{ result.concession.uf }} · {{ result.customer.subsystem_id }}</small></div>
-  <div><span>Tarifa-base média</span><strong>R$ {{ result.reference_tariff_mean_rs_kwh|floatformat:3 }}</strong><small>R$/kWh · TE + TUSD</small></div>
-  <div><span>Tarifa dinâmica média</span><strong>R$ {{ result.dynamic_tariff_mean_rs_kwh|floatformat:3 }}</strong><small>R$/kWh · varia por hora</small></div>
-  <div><span>Custo 24h · hábitos atuais</span><strong>R$ {{ result.dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.difference_pct|floatformat:2 }}% vs base (R$ {{ result.reference_cost_24h_rs|floatformat:2 }})</small></div>
-  <div class="optimized"><span>Custo 24h · otimizado</span><strong>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.optimization.flexible_percent|floatformat:0 }}% flexível · {{ result.optimization.actually_shifted_kwh|floatformat:2 }} kWh deslocados</small></div>
-  <div class="emphasis"><span>Economia potencial</span><strong>R$ {{ result.optimization.potential_savings_24h_rs|floatformat:2 }}/dia</strong><small>{{ result.optimization.potential_savings_pct|floatformat:2 }}% · ≈ R$ {{ result.optimization.potential_savings_month_rs|floatformat:2 }}/mês</small></div>
+  <div><span>Tarifa-base ANEEL média</span><strong>R$ {{ result.reference_tariff_mean_rs_kwh|floatformat:3 }}/kWh</strong><small>TE + TUSD volumétricas</small></div>
+  <div><span>Tarifa Predicta média</span><strong>R$ {{ result.dynamic_tariff_mean_rs_kwh|floatformat:3 }}/kWh</strong><small>varia hora a hora</small></div>
+  <div><span>Sem mudar hábitos</span><strong>R$ {{ result.dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.difference_pct|floatformat:2 }}% vs tarifa-base</small></div>
+  <div class="optimized"><span>Com consumo otimizado</span><strong>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.optimization.flexible_percent|floatformat:0 }}% da energia marcada como flexível</small></div>
+  <div class="emphasis"><span>Economia potencial</span><strong>R$ {{ result.optimization.potential_savings_24h_rs|floatformat:2 }}/dia</strong><small>≈ R$ {{ result.optimization.potential_savings_month_rs|floatformat:2 }}/mês · cenário ilustrativo</small></div>
+</section>
+
+<section class="panel"><div class="panel-head"><div><h2>Tarifa-base ANEEL × dinâmica</h2><p>A tarifa dinâmica responde ao sinal sistêmico. O eixo temporal está em {{ display_timezone }}.</p></div></div><div id="tariff-chart" class="chart"></div></section>
+
+<section class="panel optimization-panel">
+  <div class="panel-head"><div><p class="eyebrow">Resposta da demanda</p><h2>O que muda quando o cliente desloca consumo?</h2><p>A tarifa calculada permanece a mesma; só a curva de consumo muda. Assim conseguimos medir o incentivo econômico produzido pelo sinal horário.</p></div></div>
+  <div class="explain-grid optimization-grid">
+    <div><b>Custo tarifa-base</b><p>R$ {{ result.reference_cost_24h_rs|floatformat:2 }}</p><small>Mesma curva original na tarifa ANEEL-base.</small></div>
+    <div><b>Predicta · hábitos atuais</b><p>R$ {{ result.optimization.original_dynamic_cost_24h_rs|floatformat:2 }}</p><small>A neutralidade evita transformar o sinal em simples aumento de receita.</small></div>
+    <div><b>Predicta · otimizado</b><p>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</p><small>Energia diária total preservada.</small></div>
+    <div><b>Energia efetivamente deslocada</b><p>{{ result.optimization.actually_shifted_kwh|floatformat:2 }} kWh</p><small>De {{ result.optimization.flexible_energy_kwh|floatformat:2 }} kWh marcados como potencialmente flexíveis.</small></div>
+  </div>
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><p class="eyebrow">Passo 3</p><h2>Quando consumir</h2></div></div>
-  <div class="hour-grid">{% for h in hourly %}<div class="hour-tile {% if h.multiplier < 0.98 %}low{% elif h.multiplier > 1.02 %}high{% endif %}" title="Demanda p50 {{ h.demand_mw|floatformat:0 }} MW · referência {{ h.demand_context }}{% if h.demand_reference_n %} · n={{ h.demand_reference_n }}{% endif %}"><b>{{ h.time }}</b><span>R$ {{ h.dynamic|floatformat:3 }}</span><small>{{ h.delta_pct|floatformat:1 }}% · D {{ h.demand_pressure|floatformat:2 }}</small></div>{% endfor %}</div>
-  <p class="note">verde = abaixo da tarifa-base · vermelho = acima · D = percentil da demanda prevista (não é horário de ponta ANEEL)</p>
+  <div class="panel-head"><div><h2>24 horas · horário São Paulo</h2><p>Verde = tarifa dinâmica abaixo da base; vermelho = acima. <b>D</b> é pressão de demanda contextual, não “horário de ponta ANEEL”. D=0,97 significa demanda prevista acima de aproximadamente 97% do histórico comparável daquela hora/sazonalidade.</p></div></div>
+  <div class="hour-grid">{% for h in hourly %}<div class="hour-tile {% if h.multiplier < 0.98 %}low{% elif h.multiplier > 1.02 %}high{% endif %}" title="Predicta p50 {{ h.demand_mw|floatformat:0 }} MW · DESSEM {{ h.dessem_mw|floatformat:0 }} MW · desvio {{ h.dessem_gap_pct|floatformat:1 }}% · referência {{ h.demand_context }}{% if h.demand_reference_n %} · n={{ h.demand_reference_n }}{% endif %}"><b>{{ h.time }}</b><span>R$ {{ h.dynamic|floatformat:3 }}</span><small>{{ h.delta_pct|floatformat:1 }}% · D {{ h.demand_pressure|floatformat:2 }}</small><small>S DESSEM {{ h.supply_pressure|floatformat:3 }}</small></div>{% endfor %}</div>
 </section>
 
 <div class="two-col">
@@ -103,8 +165,38 @@ Predicta.bindConcessionMap({
 });
 {% if result %}
 const hh=JSON.parse(document.getElementById('customer-hourly-data').textContent);
+const demandSeries=[{name:'DESSEM / ONS',values:hh.map(x=>x.dessem_mw/1000)},{name:'Predicta (p50)',values:hh.map(x=>x.demand_mw/1000)}];
+if(hh.some(x=>x.actual_mw!==null&&x.actual_mw!==undefined))demandSeries.push({name:'Realizado (ONS)',values:hh.map(x=>(x.actual_mw===null||x.actual_mw===undefined)?null:x.actual_mw/1000)});
+PredictaCharts.multiLine('demand-chart',hh.map(x=>x.local_iso.slice(11,16)),demandSeries,{suffix:' GW'});
 PredictaCharts.multiLine('tariff-chart',hh.map(x=>x.time),[{name:'Tarifa-base ANEEL',values:hh.map(x=>x.base)},{name:'Tarifa Predicta',values:hh.map(x=>x.dynamic)}],{prefix:'R$ '});
-PredictaCharts.multiLine('consumption-chart',hh.map(x=>x.time),[{name:'Consumo original',values:hh.map(x=>x.consumption)},{name:'Consumo otimizado',values:hh.map(x=>x.optimized_consumption)}],{});
+const curveTabs=Array.from(document.querySelectorAll('.curve-tabs [role="tab"]'));
+function renderLoadCurve(){
+  const consumer=document.getElementById('consumer-curve-tab').getAttribute('aria-selected')==='true';
+  PredictaCharts.multiLine(consumer?'consumption-chart':'portfolio-chart',hh.map(hour=>hour.local_iso.slice(11,13)+'h'),[
+    {name:'Antes',values:hh.map(hour=>consumer?hour.consumption:hour.portfolio_before_mw)},
+    {name:'Após deslocamento',values:hh.map(hour=>consumer?hour.optimized_consumption:hour.portfolio_after_mw)}
+  ],{minZero:true,responsive:true});
+}
+function selectCurveTab(selected){
+  curveTabs.forEach(tab=>{
+    const active=tab===selected;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    document.getElementById(tab.getAttribute('aria-controls')).hidden=!active;
+  });
+  renderLoadCurve();
+}
+curveTabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>selectCurveTab(tab));
+  tab.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?curveTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+curveTabs.length)%curveTabs.length;
+    selectCurveTab(curveTabs[next]);curveTabs[next].focus();
+  });
+});
+window.addEventListener('resize',renderLoadCurve);
+renderLoadCurve();
 {% endif %}
 </script>
 {% endblock %}

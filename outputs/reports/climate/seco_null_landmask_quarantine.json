@@ -1,0 +1,9 @@
+{
+  "root": "data/climate_store/seco",
+  "quarantine_root": "data/climate_store_quarantine/seco/null_landmask",
+  "dry_run": false,
+  "scanned_json": 2530,
+  "quarantined_files": 0,
+  "distinct_bad_coordinates": [],
+  "records": []
+}

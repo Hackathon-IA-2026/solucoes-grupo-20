@@ -160,7 +160,7 @@ STAGES=[
 
     Stage('train_model','4 · Deployment','Treinar/congelar H01–H24','Empacota a configuração escolhida para inferência.','Usa histórico elegível e reserva a cauda para calibrar intervalos.','Só deve ser feito depois da validação.',None,requires=('load',),command_builder=_train_cmd,params=MODEL_PARAMS + (Param('train_start','Treino: início','date',''),Param('train_end','Treino: fim','date',''),Param('model_family_id','ID da família','text',''),Param('model_dir','Diretório','text',''))),
     Stage('forecast_active','4 · Deployment','Inferir com modelo ativo','Gera H01–H24 sem retreino.','Reconstrói as mesmas features e carrega os artefatos congelados.','É o comportamento operacional esperado no Django.',None,command_builder=_forecast_active,requires=('load',),params=(Param('issue_time','Issue time UTC','text','2025-12-30T02:00:00Z'),)),
-    Stage('build_signal','4 · Deployment','Construir system_signal_v1','Transforma forecast em contrato do Motor 1.','Publica p10/p50/p90, D, C, drivers e qualidade.','É a entrada única do Motor 2.','39_build_real_system_signal.py',outputs=('system_signal',),params=(Param('use_selected_forecast','Usar forecast do modelo ativo','checkbox','1'),)),
+    Stage('build_signal','4 · Deployment','Construir system_signal_v1','Transforma forecast em contrato do Motor 1 com DESSEM.','Publica p10/p50/p90, D, S DESSEM, C, drivers e qualidade.','É a entrada única do Motor 2.','39_build_real_system_signal.py',outputs=('system_signal',),params=(Param('use_selected_forecast','Usar forecast do modelo ativo','checkbox','1'),Param('allow_dessem_replay','Permitir cenário retrospectivo DESSEM','checkbox','0'))),
 ]
 STAGE_MAP={s.id:s for s in STAGES}
 
@@ -184,6 +184,7 @@ def _default_cmd(stage:Stage,params:dict,active=None):
     if sid=='build_signal':
         cmd=_script(stage.script)
         if _p(params,'use_selected_forecast','1') in {'1','true','on','yes'} and (ROOT/'data/processed/demand/selected_forecast_24h.parquet').exists():cmd+=['--forecast','data/processed/demand/selected_forecast_24h.parquet']
+        if _p(params,'allow_dessem_replay','0') in {'1','true','on','yes'}:cmd+=['--allow-dessem-replay']
         return cmd
     raise KeyError(stage.id)
 

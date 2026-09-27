@@ -1,0 +1,164 @@
+{
+  "action": "seed-existing",
+  "seed": {
+    "source": "data/raw/climate/annual_archive",
+    "destination": "data/climate_store",
+    "regions": {
+      "n": {
+        "files": 0,
+        "created": 0,
+        "hardlinks": 0,
+        "copies": 0,
+        "existing": 0
+      },
+      "ne": {
+        "files": 0,
+        "created": 0,
+        "hardlinks": 0,
+        "copies": 0,
+        "existing": 0
+      },
+      "seco": {
+        "files": 0,
+        "created": 0,
+        "hardlinks": 0,
+        "copies": 0,
+        "existing": 0
+      },
+      "s": {
+        "files": 0,
+        "created": 0,
+        "hardlinks": 0,
+        "copies": 0,
+        "existing": 0
+      }
+    },
+    "files": 0,
+    "created": 0
+  },
+  "inventory": {
+    "root": "data/climate_store",
+    "exists": true,
+    "regions": {
+      "n": {
+        "hourly": {
+          "files": 135,
+          "years": [
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 136339307
+        },
+        "daily": {
+          "files": 486,
+          "years": [
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 15609507
+        }
+      },
+      "ne": {
+        "hourly": {
+          "files": 180,
+          "years": [
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 181255517
+        },
+        "daily": {
+          "files": 648,
+          "years": [
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 20845939
+        }
+      },
+      "seco": {
+        "hourly": {
+          "files": 575,
+          "years": [
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 569492354
+        },
+        "daily": {
+          "files": 1955,
+          "years": [
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 66394948
+        }
+      },
+      "s": {
+        "hourly": {
+          "files": 172,
+          "years": [
+            2023,
+            2024,
+            2025,
+            2026
+          ],
+          "bytes": 213459414
+        },
+        "daily": {
+          "files": 129,
+          "years": [
+            2013,
+            2014,
+            2015
+          ],
+          "bytes": 3874646
+        }
+      }
+    },
+    "total_files": 4280,
+    "total_bytes": 1207271632
+  }
+}
