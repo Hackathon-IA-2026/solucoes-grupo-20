@@ -5,32 +5,57 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Predicta Studio{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'studio/css/app.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" id="theme-css" href="{% static 'studio/css/app.css' %}?v=3" data-dark="{% static 'studio/css/app.css' %}?v=3" data-light="{% static 'studio/css/app-light.css' %}?v=3">
+  <script>(function(){var t;try{t=localStorage.getItem('predicta-theme')}catch(e){}if(t==='light'){var l=document.getElementById('theme-css');l.href=l.dataset.light}document.documentElement.dataset.theme=t==='light'?'light':'dark'})()</script>
 </head>
 <body>
   <header class="topbar">
-    <a href="{% url 'studio:dashboard' %}" class="brand" aria-label="Predicta início"><span class="brand-mark">P</span><span><strong>Predicta</strong><small>Studio MVP</small></span></a>
+    <a href="{% url 'studio:dashboard' %}" class="brand" aria-label="Predicta início"><span class="brand-mark">P</span><span><strong>Predicta</strong><small>studio</small></span></a>
     <nav class="nav" aria-label="Navegação principal">
-      <a class="{% if page == 'dashboard' %}active{% endif %}" href="{% url 'studio:dashboard' %}">Visão geral</a>
-      <a class="{% if page == 'automation' %}active{% endif %}" href="{% url 'studio:automation' %}">Automação</a>
-      <a class="{% if page == 'data' %}active{% endif %}" href="{% url 'studio:data' %}">Dados</a>
-      <a class="{% if page == 'features' %}active{% endif %}" href="{% url 'studio:features' %}">Features</a>
-      <a class="{% if page == 'territory' %}active{% endif %}" href="{% url 'studio:territory' %}">Clima & geração</a>
-      <a class="{% if page == 'modeling' %}active{% endif %}" href="{% url 'studio:modeling' %}">Modelagem</a>
-      <a class="{% if page == 'validation' %}active{% endif %}" href="{% url 'studio:validation' %}">Validação</a>
-      <a class="{% if page == 'models' %}active{% endif %}" href="{% url 'studio:models' %}">Modelos</a>
       <a class="product-link {% if page == 'product' %}active{% endif %}" href="{% url 'studio:product' %}">Produto</a>
-      <a class="nav-advanced {% if page == 'pipeline' %}active{% endif %}" href="{% url 'studio:pipeline' %}">Pipeline técnico</a>
+      <a class="{% if page == 'dashboard' %}active{% endif %}" href="{% url 'studio:dashboard' %}">Visão geral</a>
+      <button type="button" class="theme-button" id="theme-button" aria-label="Alternar modo claro/escuro" title="Alternar modo claro/escuro">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <label for="drawer-toggle" class="menu-button {% if page != 'product' and page != 'dashboard' %}active{% endif %}" aria-label="Abrir menu técnico" title="Menu técnico"><span></span><span></span><span></span></label>
     </nav>
   </header>
-  <div class="context-strip"><span class="status-dot"></span><strong>MVP local</strong><span>•</span>{% if operational_registry_global %}<span>Operacional: <b>registry regional</b> · Ridge/XGBoost por subsistema</span>{% elif active_model_global %}<span>Modelo ativo: <b>{{ active_model_global.model_family_id }}</b> · {{ active_model_global.algorithm|default:active_model_global.experiment }}</span>{% else %}<span>Nenhum modelo promovido</span>{% endif %}<span class="context-warning">UTC nos dados · hora local no calendário</span></div>
+  <input type="checkbox" id="drawer-toggle" class="drawer-toggle" hidden>
+  <label for="drawer-toggle" class="drawer-overlay" aria-hidden="true"></label>
+  <aside class="drawer" aria-label="Menu técnico">
+    <div class="drawer-head"><strong>Técnico</strong><label for="drawer-toggle" class="drawer-close" aria-label="Fechar menu">×</label></div>
+    <small>dados</small>
+    <a class="{% if page == 'data' %}active{% endif %}" href="{% url 'studio:data' %}">Dados</a>
+    <a class="{% if page == 'territory' %}active{% endif %}" href="{% url 'studio:territory' %}">Clima & geração</a>
+    <a class="{% if page == 'features' %}active{% endif %}" href="{% url 'studio:features' %}">Features</a>
+    <small>modelos</small>
+    <a class="{% if page == 'modeling' %}active{% endif %}" href="{% url 'studio:modeling' %}">Modelagem</a>
+    <a class="{% if page == 'validation' %}active{% endif %}" href="{% url 'studio:validation' %}">Validação</a>
+    <a class="{% if page == 'models' %}active{% endif %}" href="{% url 'studio:models' %}">Modelos</a>
+    <small>operação</small>
+    <a class="{% if page == 'automation' %}active{% endif %}" href="{% url 'studio:automation' %}">Automação</a>
+    <a class="{% if page == 'pipeline' %}active{% endif %}" href="{% url 'studio:pipeline' %}">Pipeline técnico</a>
+  </aside>
+  <div class="context-strip"><span class="status-dot"></span><strong>mvp local</strong><span>·</span>{% if operational_registry_global %}<span>modelo: registry regional · Ridge/XGBoost por subsistema</span>{% elif active_model_global %}<span>modelo ativo: {{ active_model_global.model_family_id }} · {{ active_model_global.algorithm|default:active_model_global.experiment }}</span>{% else %}<span>nenhum modelo promovido</span>{% endif %}<span class="context-warning">dados em UTC · exibição em America/Sao_Paulo</span></div>
   <main class="page-shell">
     {% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
     {% block content %}{% endblock %}
   </main>
-  <footer class="footer"><span>Predicta · Hackathon IA 2026</span><span>Pipeline auditável · contratos versionados · tarifa dinâmica experimental</span></footer>
-  <script src="{% static 'studio/js/charts.js' %}"></script>
-  <script src="{% static 'studio/js/app.js' %}"></script>
+  <footer class="footer"><span>Predicta · Hackathon IA 2026</span><span>tarifa dinâmica experimental · não é fatura regulada</span></footer>
+  <script src="{% static 'studio/js/charts.js' %}?v=3"></script>
+  <script src="{% static 'studio/js/app.js' %}?v=3"></script>
+  <script>
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){const t=document.getElementById('drawer-toggle');if(t)t.checked=false}});
+    document.getElementById('theme-button').addEventListener('click',()=>{
+      const root=document.documentElement,link=document.getElementById('theme-css');
+      const next=root.dataset.theme==='light'?'dark':'light';
+      root.dataset.theme=next;link.href=next==='light'?link.dataset.light:link.dataset.dark;
+      try{localStorage.setItem('predicta-theme',next)}catch(e){}
+    });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

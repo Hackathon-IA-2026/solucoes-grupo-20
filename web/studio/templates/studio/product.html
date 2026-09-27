@@ -4,25 +4,25 @@
 {% block content %}
 <section class="page-header product-header">
   <div>
-    <p class="eyebrow">6 · Produto</p>
-    <h1>Localização → tarifa vigente → tarifa Predicta</h1>
-    <p>Escolha uma área real de concessão, uma janela de simulação e o perfil tarifário. <b>Toda a experiência do consumidor é exibida no horário de São Paulo (America/Sao_Paulo)</b>; UTC permanece apenas no armazenamento e auditoria técnica.</p>
+    <p class="eyebrow">produto</p>
+    <h1>Simulação de tarifa dinâmica</h1>
+    <p>Escolha a área de concessão, o perfil tarifário ANEEL e veja quando vale a pena consumir nas próximas 24h.</p>
+    <p class="note">TE + TUSD volumétricas · não inclui tributos, CIP, bandeiras nem demanda R$/kW · horários em {{ display_timezone }}</p>
   </div>
-  <div class="warning-box narrow"><b>Escopo:</b> comparação volumétrica TE+TUSD. Não reproduz integralmente a fatura regulada; tributos, CIP, bandeiras e demanda R$/kW podem ficar fora.</div>
 </section>
 
-{% if not tariffs_ready %}<section class="panel warning-box"><b>Tarifas ainda não preparadas.</b> O mapa pode ser navegado, mas os perfis tarifários só aparecem após relacionar GeoJSON + CSV ANEEL. <a href="{% url 'studio:data' %}">Preparar em Dados →</a></section>{% endif %}
+{% if not tariffs_ready %}<section class="panel warning-box"><b>Tarifas ANEEL ainda não preparadas.</b> O mapa funciona, mas os perfis só aparecem depois de preparar GeoJSON + CSV ANEEL. <a href="{% url 'studio:data' %}">Preparar em Dados →</a></section>{% endif %}
 
 <div class="product-layout real-map-layout">
 <section class="panel map-panel real-map-panel">
-  <div class="panel-head"><div><p class="eyebrow">1 · Localização</p><h2>Áreas reais de concessão</h2><p>Polígonos SIGEL/ANEEL convertidos de SIRGAS 2000 para WGS84. Clique em uma área ou use a busca.</p></div></div>
-  <label class="field distributor-search"><span>Buscar distribuidora</span><select id="distributor-search"><option value="">Selecione…</option>{% for d in distributor_options %}<option value="{{ d.cnpj }}">{{ d.uf }} · {{ d.sigla }} · {{ d.name }}</option>{% endfor %}</select></label>
+  <div class="panel-head"><div><p class="eyebrow">Passo 1</p><h2>Localização</h2><p>Clique em uma área de concessão ou busque a distribuidora.</p></div></div>
+  <label class="field distributor-search"><span>Distribuidora</span><select id="distributor-search"><option value="">Selecione…</option>{% for d in distributor_options %}<option value="{{ d.cnpj }}">{{ d.uf }} · {{ d.sigla }} · {{ d.name }}</option>{% endfor %}</select></label>
   <div class="real-map-wrap"><svg id="concession-map" class="concession-map" viewBox="0 0 920 720" role="img" aria-label="Mapa real das áreas de concessão de distribuição do Brasil"></svg><div id="map-tooltip" class="map-tooltip" hidden></div></div>
-  <div class="map-key"><span><i class="dot n"></i>N</span><span><i class="dot ne"></i>NE</span><span><i class="dot seco"></i>SE/CO</span><span><i class="dot s"></i>S</span><small>Contorno = área de concessão real. Cor do subsistema = associação proxy do MVP por macrorregião; não é fronteira elétrica oficial do ONS.</small></div>
+  <div class="map-key"><span><i class="dot n"></i>N</span><span><i class="dot ne"></i>NE</span><span><i class="dot seco"></i>SE/CO</span><span><i class="dot s"></i>S</span><small>cor = subsistema (proxy por macrorregião, não fronteira elétrica do ONS)</small></div>
 </section>
 
 <section class="panel product-form-panel">
-  <div class="panel-head"><div><p class="eyebrow">2 · Janela, cliente e tarifa</p><h2>Como você quer simular?</h2><p>Replay histórico usa somente janelas realmente disponíveis no backtest. O modo operacional só é habilitado quando existe previsão futura válida, sem clima observado do futuro.</p></div></div>
+  <div class="panel-head"><div><p class="eyebrow">Passo 2</p><h2>Simulação</h2></div></div>
   {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
 
   <form method="post" id="customer-form">{% csrf_token %}
@@ -30,13 +30,12 @@
       <label class="field"><span>Modo</span><select name="simulation_mode" id="simulation-mode">
         <option value="replay" {% if simulation_mode == 'replay' %}selected{% endif %}>Replay histórico validado</option>
         <option value="operational" {% if simulation_mode == 'operational' %}selected{% endif %} {% if not operational_status.available %}disabled{% endif %}>Operacional · próximas 24h{% if not operational_status.available %} — indisponível{% endif %}</option>
-      </select><small>Replay = demonstração retrospectiva. Operacional = forecast realmente disponível no instante de emissão.</small></label>
-      <label class="field" id="replay-date-field"><span>Data do replay · horário São Paulo</span><select name="replay_issue" id="replay-date">
-        {% for w in replay_windows %}<option value="{{ w.key }}" data-effective="{{ w.local_date }}" {% if w.key == selected_replay %}selected{% endif %}>{{ w.label }}</option>{% empty %}<option value="">Nenhuma janela histórica de 24h encontrada</option>{% endfor %}
-      </select><small>As datas exibidas já foram convertidas de UTC para {{ display_timezone }}.</small></label>
+      </select></label>
+      <label class="field" id="replay-date-field"><span>Data do replay</span><select name="replay_issue" id="replay-date">
+        {% for w in replay_windows %}<option value="{{ w.key }}" data-effective="{{ w.local_date }}" {% if w.key == selected_replay %}selected{% endif %}>{{ w.label }}</option>{% empty %}<option value="">Nenhuma janela de 24h disponível</option>{% endfor %}
+      </select></label>
     </div>
-    {% if simulation_mode == 'replay' and selected_window %}<div class="mode-status replay"><b>Replay histórico</b><span>{{ selected_window.label }} · {{ display_timezone }}</span><small>O clima dessa janela é observado/backtest. O resultado mede comportamento retrospectivo; não é uma previsão emitida naquela tela para hoje.</small></div>{% endif %}
-    {% if not operational_status.available %}<div class="mode-status unavailable"><b>Operacional ainda bloqueado metodologicamente</b><span>{{ operational_status.reason }}</span><small>Ele será habilitado automaticamente quando o <code>system_signal_v1</code> tiver 24h futuras, dados frescos e não carregar o flag PERFECT_WEATHER_BACKTEST.</small></div>{% endif %}
+    {% if not operational_status.available %}<p class="note">operacional indisponível: {{ operational_status.reason }}</p>{% endif %}
 
     <input type="hidden" name="region" id="region-input" value="{{ selected_region }}">
     <input type="hidden" name="cnpj" id="cnpj-input" value="{{ selected_cnpj }}">
@@ -47,50 +46,49 @@
       <small id="location-detail">{% if selected_info %}{{ selected_info.razao_social }} · CNPJ {{ selected_info.cnpj }} · {{ selected_region }}{% else %}O CNPJ será usado como chave entre localização e tarifa.{% endif %}</small>
     </div>
 
-    <label class="field"><span>Perfil tarifário ANEEL</span><select name="profile" id="profile-select" required><option value="">Selecione a localização primeiro…</option>{% for p in profiles %}<option value="{{ p.id }}" data-distributor="{{ p.distributor_id }}" data-base="{{ p.base_total_rs_kwh }}" data-te="{{ p.base_te_rs_kwh }}" data-tusd="{{ p.base_tusd_rs_kwh }}" data-effective="{{ p.effective_date }}" {% if p.id == selected_profile and p.distributor_id == selected_distributor %}selected{% endif %}>{{ p.label }} · R$ {{ p.base_total_rs_kwh|floatformat:4 }}/kWh</option>{% endfor %}</select><small>Por segurança do MVP, aparecem perfis volumétricos com posto UNIQUE e Tarifa de Aplicação vigentes na data selecionada.</small></label>
+    <label class="field"><span>Perfil tarifário ANEEL</span><select name="profile" id="profile-select" required><option value="">Selecione a localização primeiro…</option>{% for p in profiles %}<option value="{{ p.id }}" data-distributor="{{ p.distributor_id }}" data-base="{{ p.base_total_rs_kwh }}" data-te="{{ p.base_te_rs_kwh }}" data-tusd="{{ p.base_tusd_rs_kwh }}" data-effective="{{ p.effective_date }}" {% if p.id == selected_profile and p.distributor_id == selected_distributor %}selected{% endif %}>{{ p.label }} · R$ {{ p.base_total_rs_kwh|floatformat:4 }}/kWh</option>{% endfor %}</select></label>
     <div class="tariff-preview"><div><span>TE</span><strong id="preview-te">—</strong></div><div><span>TUSD</span><strong id="preview-tusd">—</strong></div><div class="emphasis"><span>TE + TUSD</span><strong id="preview-total">—</strong></div><div><span>Data de referência</span><strong id="preview-effective">{% human_date effective_date %}</strong></div></div>
 
     <div class="two-fields"><label class="field"><span>Consumo mensal</span><div class="input-suffix"><input type="number" step="1" min="1" name="monthly_kwh" value="{{ monthly_kwh }}" required><b>kWh</b></div></label><label class="field"><span>Forma da curva</span><select name="customer_type"><option value="residential" {% if customer_type == 'residential' %}selected{% endif %}>Residencial</option><option value="commercial" {% if customer_type == 'commercial' %}selected{% endif %}>Comercial</option><option value="industrial_flat" {% if customer_type == 'industrial_flat' %}selected{% endif %}>Industrial plana</option></select></label></div>
-    <label class="field"><span>Parcela potencialmente flexível do consumo</span><div class="input-suffix"><input type="number" step="5" min="0" max="80" name="flexible_pct" value="{{ flexible_pct }}" required><b>%</b></div><small>Usada apenas no cenário “consumo otimizado”. A energia total de 24h é preservada; o simulador desloca essa parcela para horas mais baratas com limite de concentração por hora.</small></label>
-    <button class="button primary large" id="simulate-button" {% if not selected_cnpj %}disabled{% endif %}>Simular tarifa dinâmica 24h</button>
+    <label class="field"><span>Consumo flexível</span><div class="input-suffix"><input type="number" step="5" min="0" max="80" name="flexible_pct" value="{{ flexible_pct }}" required><b>%</b></div></label>
+    <button class="button primary large" id="simulate-button" {% if not selected_cnpj %}disabled{% endif %}>Simular 24h</button>
   </form>
 
-  <div class="method-box"><b>Fluxo mostrado ao usuário:</b><ol><li>ponto/área → CNPJ da concessão;</li><li>CNPJ + data → tarifa ANEEL vigente e perfil;</li><li>subsistema + janela → <code>system_signal_v1</code>;</li><li><b>D</b> = percentil contextual de demanda, comparando a mesma hora local e sazonalidade antes de ampliar o histórico;</li><li>Motor 2 → multiplicador protegido por piso/teto/rampa/neutralidade;</li><li>cenário otimizado desloca somente a parcela flexível, sem alterar energia total.</li></ol></div>
+  <details class="help"><summary>Como funciona</summary>
+    <ol>
+      <li>Área no mapa → CNPJ da concessão → perfil ANEEL vigente (TE + TUSD, posto único, Tarifa de Aplicação).</li>
+      <li>Subsistema + janela → <code>system_signal_v1</code>. <b>D</b> é o percentil da demanda prevista frente ao histórico da mesma hora e estação.</li>
+      <li>Motor 2 gera um multiplicador por hora, com piso, teto, rampa e neutralidade.</li>
+      <li><b>Replay</b> usa um dia histórico do backtest. <b>Operacional</b> só é liberado com previsão futura válida, sem clima observado.</li>
+      <li>O cenário otimizado desloca só a parcela flexível para horas mais baratas; a energia total do dia não muda.</li>
+    </ol>
+  </details>
 </section>
 </div>
 
 {% if result %}
-<section class="result-context"><b>{% if result.simulation_mode == 'replay' %}Replay histórico{% else %}Operacional{% endif %}</b><span>{{ result.window.label }} · {{ result.display_timezone }}</span><small>Todos os horários abaixo são locais. UTC fica apenas nos artefatos técnicos.</small></section>
+<section class="result-context"><b>{% if result.simulation_mode == 'replay' %}Replay histórico{% else %}Operacional{% endif %}</b><span>{{ result.window.label }} · {{ result.display_timezone }}</span></section>
 <section class="result-hero result-hero-six">
   <div><span>Distribuidora</span><strong>{% if result.concession.sigla %}{{ result.concession.sigla }}{% else %}{{ result.customer.distributor_id }}{% endif %}</strong><small>{{ result.concession.uf }} · {{ result.customer.subsystem_id }}</small></div>
-  <div><span>Tarifa-base ANEEL média</span><strong>R$ {{ result.reference_tariff_mean_rs_kwh|floatformat:3 }}/kWh</strong><small>TE + TUSD volumétricas</small></div>
-  <div><span>Tarifa Predicta média</span><strong>R$ {{ result.dynamic_tariff_mean_rs_kwh|floatformat:3 }}/kWh</strong><small>varia hora a hora</small></div>
-  <div><span>Sem mudar hábitos</span><strong>R$ {{ result.dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.difference_pct|floatformat:2 }}% vs tarifa-base</small></div>
-  <div class="optimized"><span>Com consumo otimizado</span><strong>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.optimization.flexible_percent|floatformat:0 }}% da energia marcada como flexível</small></div>
-  <div class="emphasis"><span>Economia potencial</span><strong>R$ {{ result.optimization.potential_savings_24h_rs|floatformat:2 }}/dia</strong><small>≈ R$ {{ result.optimization.potential_savings_month_rs|floatformat:2 }}/mês · cenário ilustrativo</small></div>
-</section>
-
-<div class="two-col">
-  <section class="panel"><div class="panel-head"><div><h2>Tarifa-base ANEEL × dinâmica</h2><p>A tarifa dinâmica responde ao sinal sistêmico. O eixo temporal está em {{ display_timezone }}.</p></div></div><div id="tariff-chart" class="chart"></div></section>
-  <section class="panel"><div class="panel-head"><div><h2>Curva de consumo</h2><p>Original × cenário com deslocamento da parcela flexível. O total de kWh em 24h é preservado.</p></div></div><div id="consumption-chart" class="chart"></div></section>
-</div>
-
-<section class="panel optimization-panel">
-  <div class="panel-head"><div><p class="eyebrow">Resposta da demanda</p><h2>O que muda quando o cliente desloca consumo?</h2><p>A tarifa calculada permanece a mesma; só a curva de consumo muda. Assim conseguimos medir o incentivo econômico produzido pelo sinal horário.</p></div></div>
-  <div class="explain-grid optimization-grid">
-    <div><b>Custo tarifa-base</b><p>R$ {{ result.reference_cost_24h_rs|floatformat:2 }}</p><small>Mesma curva original na tarifa ANEEL-base.</small></div>
-    <div><b>Predicta · hábitos atuais</b><p>R$ {{ result.optimization.original_dynamic_cost_24h_rs|floatformat:2 }}</p><small>A neutralidade evita transformar o sinal em simples aumento de receita.</small></div>
-    <div><b>Predicta · otimizado</b><p>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</p><small>Energia diária total preservada.</small></div>
-    <div><b>Energia efetivamente deslocada</b><p>{{ result.optimization.actually_shifted_kwh|floatformat:2 }} kWh</p><small>De {{ result.optimization.flexible_energy_kwh|floatformat:2 }} kWh marcados como potencialmente flexíveis.</small></div>
-  </div>
+  <div><span>Tarifa-base média</span><strong>R$ {{ result.reference_tariff_mean_rs_kwh|floatformat:3 }}</strong><small>R$/kWh · TE + TUSD</small></div>
+  <div><span>Tarifa dinâmica média</span><strong>R$ {{ result.dynamic_tariff_mean_rs_kwh|floatformat:3 }}</strong><small>R$/kWh · varia por hora</small></div>
+  <div><span>Custo 24h · hábitos atuais</span><strong>R$ {{ result.dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.difference_pct|floatformat:2 }}% vs base (R$ {{ result.reference_cost_24h_rs|floatformat:2 }})</small></div>
+  <div class="optimized"><span>Custo 24h · otimizado</span><strong>R$ {{ result.optimization.optimized_dynamic_cost_24h_rs|floatformat:2 }}</strong><small>{{ result.optimization.flexible_percent|floatformat:0 }}% flexível · {{ result.optimization.actually_shifted_kwh|floatformat:2 }} kWh deslocados</small></div>
+  <div class="emphasis"><span>Economia potencial</span><strong>R$ {{ result.optimization.potential_savings_24h_rs|floatformat:2 }}/dia</strong><small>{{ result.optimization.potential_savings_pct|floatformat:2 }}% · ≈ R$ {{ result.optimization.potential_savings_month_rs|floatformat:2 }}/mês</small></div>
 </section>
 
 <section class="panel">
-  <div class="panel-head"><div><h2>24 horas · horário São Paulo</h2><p>Verde = tarifa dinâmica abaixo da base; vermelho = acima. <b>D</b> é pressão de demanda contextual, não “horário de ponta ANEEL”. D=0,97 significa demanda prevista acima de aproximadamente 97% do histórico comparável daquela hora/sazonalidade.</p></div></div>
+  <div class="panel-head"><div><p class="eyebrow">Passo 3</p><h2>Quando consumir</h2></div></div>
   <div class="hour-grid">{% for h in hourly %}<div class="hour-tile {% if h.multiplier < 0.98 %}low{% elif h.multiplier > 1.02 %}high{% endif %}" title="Demanda p50 {{ h.demand_mw|floatformat:0 }} MW · referência {{ h.demand_context }}{% if h.demand_reference_n %} · n={{ h.demand_reference_n }}{% endif %}"><b>{{ h.time }}</b><span>R$ {{ h.dynamic|floatformat:3 }}</span><small>{{ h.delta_pct|floatformat:1 }}% · D {{ h.demand_pressure|floatformat:2 }}</small></div>{% endfor %}</div>
+  <p class="note">verde = abaixo da tarifa-base · vermelho = acima · D = percentil da demanda prevista (não é horário de ponta ANEEL)</p>
 </section>
 
-<section class="panel"><div class="explain-grid"><div><b>Custo referência</b><p>R$ {{ result.reference_cost_24h_rs|floatformat:2 }}</p></div><div><b>Custo Predicta</b><p>R$ {{ result.dynamic_cost_24h_rs|floatformat:2 }}</p></div><div><b>Economia potencial com resposta</b><p>R$ {{ result.optimization.potential_savings_24h_rs|floatformat:2 }} · {{ result.optimization.potential_savings_pct|floatformat:2 }}%</p></div><div><b>Escopo</b><p>{{ result.simulation_scope_pt }}</p></div></div></section>
+<div class="two-col">
+  <section class="panel"><div class="panel-head"><div><p class="eyebrow">Passo 4</p><h2>Tarifa-base × dinâmica</h2></div></div><div id="tariff-chart" class="chart"></div></section>
+  <section class="panel"><div class="panel-head"><div><p class="eyebrow">Passo 5</p><h2>Consumo original × otimizado</h2></div></div><div id="consumption-chart" class="chart"></div><p class="note">o total de kWh em 24h é preservado</p></section>
+</div>
+
+<p class="note">{{ result.simulation_scope_pt }}</p>
 {{ hourly|json_script:'customer-hourly-data' }}
 {% endif %}
 {% endblock %}

@@ -4,60 +4,60 @@
 {% block content %}
 <section class="hero compact">
   <div>
-    <p class="eyebrow">Centro de controle do MVP</p>
-    <h1>Da carga real do ONS à tarifa dinâmica explicável</h1>
-    <p class="lead">Acompanhe dados, experimentos, modelos e o produto sem esconder as etapas técnicas. Cada tela mostra o que está sendo calculado, por quê e com quais limitações.</p>
+    <p class="eyebrow">visão geral do MVP</p>
+    <h1>Predicta Studio</h1>
+    <p class="lead">Da carga real do ONS à tarifa dinâmica explicável: dados, modelos e produto em um só lugar.</p>
   </div>
   <div class="hero-actions">
-    <a class="button primary" href="{% url 'studio:data' %}">Preparar dados</a>
-    <a class="button" href="{% url 'studio:product' %}">Abrir produto</a>
+    <a class="button primary" href="{% url 'studio:product' %}">Abrir produto</a>
+    <a class="button" href="{% url 'studio:data' %}">Preparar dados</a>
   </div>
 </section>
 
-<section class="next-action panel"><div><p class="eyebrow">Próxima ação recomendada</p><h2>{{ next_action.title }}</h2><p>{{ next_action.text }}</p></div><a class="button primary" href="{% url next_action.url %}">Continuar →</a></section>
+<section class="next-action panel"><div><p class="eyebrow">próxima ação</p><h2>{{ next_action.title }}</h2><p>{{ next_action.text }}</p></div><a class="button primary" href="{% url next_action.url %}">Continuar →</a></section>
 
 <section class="kpi-grid">
-  <article class="kpi"><span>Artefatos detectados</span><strong>{{ artifact_complete }}/{{ artifact_total }}</strong><small>datasets, contratos e resultados</small></article>
-  <article class="kpi"><span>Famílias congeladas</span><strong>{{ models|length }}</strong><small>modelos H01–H24 disponíveis</small></article>
-  <article class="kpi"><span>Modelo ativo</span><strong>{% if active_model %}{{ active_model.experiment }}{% else %}—{% endif %}</strong><small>{% if active_model %}{{ active_model.model_family_id }}{% else %}selecione em Modelos{% endif %}</small></article>
-  <article class="kpi"><span>Regiões com sinal</span><strong>{% for r in regions %}{% if r.available %}{{ r.id }} {% endif %}{% empty %}—{% endfor %}</strong><small>system_signal_v1 disponível</small></article>
+  <article class="kpi"><span>artefatos</span><strong>{{ artifact_complete }}/{{ artifact_total }}</strong><small>datasets, contratos e resultados</small></article>
+  <article class="kpi"><span>famílias de modelo</span><strong>{{ models|length }}</strong><small>H01–H24 congeladas</small></article>
+  <article class="kpi"><span>modelo ativo</span><strong>{% if active_model %}{{ active_model.experiment }}{% else %}—{% endif %}</strong><small>{% if active_model %}{{ active_model.model_family_id }}{% else %}promova em Modelos{% endif %}</small></article>
+  <article class="kpi"><span>regiões com sinal</span><strong>{% for r in regions %}{% if r.available %}{{ r.id }} {% endif %}{% endfor %}{% if not regions %}—{% endif %}</strong><small>system_signal_v1</small></article>
 </section>
 
 <div class="two-col">
   <section class="panel">
-    <div class="panel-head"><div><p class="eyebrow">Validação</p><h2>Desempenho do modelo</h2></div><a href="{% url 'studio:validation' %}">ver detalhes →</a></div>
+    <div class="panel-head"><div><p class="eyebrow">validação</p><h2>Desempenho do modelo</h2></div><a href="{% url 'studio:validation' %}">detalhes →</a></div>
     {% if metrics.exists %}
       <div class="metric-cards">
       {% for m in metrics.rows %}
         {% if m.experiment == 'E1' or m.experiment == 'E2' or m.experiment == 'E3' %}
-        <div class="metric-card"><span>{{ m.experiment }}</span><strong>{{ m.WAPE_pct|floatformat:2 }}%</strong><small>WAPE (fração)</small></div>
+        <div class="metric-card"><span>{{ m.experiment }}</span><strong>{{ m.WAPE_pct|floatformat:2 }}%</strong><small>WAPE</small></div>
         {% endif %}
       {% endfor %}
       </div>
-      <p class="help-text">Menor WAPE é melhor. Veja MAE/RMSE, horizontes H01–H24 e cobertura probabilística em <b>Validação</b>.</p>
+      <p class="help-text">Menor WAPE é melhor.</p>
     {% else %}
-      <div class="empty-state">Ainda não há métricas. Execute E1/E2/E3 no Pipeline.</div>
+      <div class="empty-state">Sem métricas ainda — rode E1/E2/E3 no pipeline.</div>
     {% endif %}
   </section>
 
   <section class="panel">
-    <div class="panel-head"><div><p class="eyebrow">Operação</p><h2>Estado da solução</h2></div></div>
-    <div class="status-list">
-      {% for a in artifacts|slice:':8' %}
-      <div><span class="status-icon {% if a.exists %}ok{% endif %}">{% if a.exists %}✓{% else %}·{% endif %}</span><span><b>{{ a.label }}</b><small>{{ a.stage }}</small></span></div>
-      {% endfor %}
+    <div class="panel-head"><div><p class="eyebrow">execuções</p><h2>Últimas etapas</h2></div><a href="{% url 'studio:pipeline' %}">pipeline →</a></div>
+    {% if recent_runs %}
+    <div class="run-list">
+    {% for run in recent_runs|slice:':5' %}
+      <a href="{% url 'studio:run_detail' run.id %}" class="run-row"><span class="badge status-{{ run.status|lower }}">{{ run.get_status_display }}</span><b>{{ run.stage_label }}</b><span>{% human_date run.created_at %}</span></a>
+    {% endfor %}
     </div>
+    {% else %}<div class="empty-state">Nenhuma etapa iniciada pela interface.</div>{% endif %}
   </section>
 </div>
 
 <section class="panel">
-  <div class="panel-head"><div><p class="eyebrow">Rastreabilidade</p><h2>Execuções recentes</h2></div><a href="{% url 'studio:pipeline' %}">pipeline completo →</a></div>
-  {% if recent_runs %}
-  <div class="run-list">
-  {% for run in recent_runs %}
-    <a href="{% url 'studio:run_detail' run.id %}" class="run-row"><span class="badge status-{{ run.status|lower }}">{{ run.get_status_display }}</span><b>{{ run.stage_label }}</b><span>{% human_date run.created_at %}</span></a>
-  {% endfor %}
+  <div class="panel-head"><div><p class="eyebrow">dados</p><h2>Estado dos artefatos</h2></div><a href="{% url 'studio:data' %}">dados →</a></div>
+  <div class="artifact-chips">
+    {% for a in artifacts %}
+    <div class="{% if a.exists %}ok{% endif %}" title="{{ a.stage }}"><i></i><span>{{ a.label }}</span></div>
+    {% endfor %}
   </div>
-  {% else %}<div class="empty-state">Nenhuma etapa foi iniciada pela interface ainda.</div>{% endif %}
 </section>
 {% endblock %}
