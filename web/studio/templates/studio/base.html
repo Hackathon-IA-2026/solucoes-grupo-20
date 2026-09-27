@@ -9,21 +9,32 @@
 </head>
 <body>
   <header class="topbar">
-    <a href="{% url 'studio:dashboard' %}" class="brand" aria-label="Predicta início"><span class="brand-mark">P</span><span><strong>Predicta</strong><small>Studio MVP</small></span></a>
+    <a href="{% url 'studio:product' %}" class="brand" aria-label="Predicta início"><span class="brand-mark">P</span><span><strong>Predicta</strong><small>Studio MVP</small></span></a>
     <nav class="nav" aria-label="Navegação principal">
-      <a class="{% if page == 'dashboard' %}active{% endif %}" href="{% url 'studio:dashboard' %}">Visão geral</a>
-      <a class="{% if page == 'automation' %}active{% endif %}" href="{% url 'studio:automation' %}">Automação</a>
-      <a class="{% if page == 'data' %}active{% endif %}" href="{% url 'studio:data' %}">Dados</a>
-      <a class="{% if page == 'features' %}active{% endif %}" href="{% url 'studio:features' %}">Features</a>
-      <a class="{% if page == 'territory' %}active{% endif %}" href="{% url 'studio:territory' %}">Clima & geração</a>
-      <a class="{% if page == 'modeling' %}active{% endif %}" href="{% url 'studio:modeling' %}">Modelagem</a>
-      <a class="{% if page == 'validation' %}active{% endif %}" href="{% url 'studio:validation' %}">Validação</a>
-      <a class="{% if page == 'models' %}active{% endif %}" href="{% url 'studio:models' %}">Modelos</a>
       <a class="product-link {% if page == 'product' %}active{% endif %}" href="{% url 'studio:product' %}">Produto</a>
-      <a class="nav-advanced {% if page == 'pipeline' %}active{% endif %}" href="{% url 'studio:pipeline' %}">Pipeline técnico</a>
+      <a class="{% if page == 'territory' %}active{% endif %}" href="{% url 'studio:territory' %}">Clima &amp; geração</a>
+      <button type="button" id="playground-toggle" class="playground-toggle {% if page in 'dashboard automation data features modeling validation models pipeline runs' %}active{% endif %}" aria-expanded="false" aria-controls="playground-sidebar">☰ Playground</button>
     </nav>
   </header>
-  <div class="context-strip"><span class="status-dot"></span><strong>MVP local</strong><span>•</span>{% if operational_registry_global %}<span>Operacional: <b>registry regional</b> · Ridge/XGBoost por subsistema</span>{% elif active_model_global %}<span>Modelo ativo: <b>{{ active_model_global.model_family_id }}</b> · {{ active_model_global.algorithm|default:active_model_global.experiment }}</span>{% else %}<span>Nenhum modelo promovido</span>{% endif %}<span class="context-warning">UTC nos dados · hora local no calendário</span></div>
+  <aside id="playground-sidebar" class="playground-sidebar" hidden aria-label="Playground · pipeline técnico">
+    <div class="playground-head">
+      <div><strong>Playground</strong><small>pipeline técnico · zona do analista</small></div>
+      <button type="button" id="playground-close" aria-label="Fechar playground">×</button>
+    </div>
+    <p class="playground-note">Aqui vivem os controles que alimentam o Produto: atualização de datasets, features, treino e validação de modelos. Cada tela tem um “Como funciona?”.</p>
+    <nav class="playground-nav">
+      <a class="{% if page == 'dashboard' %}active{% endif %}" href="{% url 'studio:dashboard' %}"><b>Visão geral</b><small>status do pipeline e próximos passos</small></a>
+      <a class="{% if page == 'automation' %}active{% endif %}" href="{% url 'studio:automation' %}"><b>Automação</b><small>rodar o pipeline completo por região</small></a>
+      <a class="{% if page == 'data' %}active{% endif %}" href="{% url 'studio:data' %}"><b>Dados</b><small>atualizar e inspecionar datasets</small></a>
+      <a class="{% if page == 'features' %}active{% endif %}" href="{% url 'studio:features' %}"><b>Features</b><small>histórico, clima e eventos extremos</small></a>
+      <a class="{% if page == 'modeling' %}active{% endif %}" href="{% url 'studio:modeling' %}"><b>Modelagem</b><small>comparar algoritmos e experimentos</small></a>
+      <a class="{% if page == 'validation' %}active{% endif %}" href="{% url 'studio:validation' %}"><b>Validação</b><small>backtests, WAPE e cobertura</small></a>
+      <a class="{% if page == 'models' %}active{% endif %}" href="{% url 'studio:models' %}"><b>Modelos</b><small>famílias congeladas e promoção</small></a>
+      <a class="{% if page == 'pipeline' %}active{% endif %}" href="{% url 'studio:pipeline' %}"><b>Pipeline técnico</b><small>rodar etapas individuais com logs</small></a>
+    </nav>
+  </aside>
+  <div id="playground-backdrop" class="playground-backdrop" hidden></div>
+  {% if page != 'product' and page != 'territory' %}<div class="context-strip"><span class="status-dot"></span><strong>MVP local</strong><span>•</span>{% if operational_registry_global %}<span>Operacional: <b>registry regional</b> · Ridge/XGBoost por subsistema</span>{% elif active_model_global %}<span>Modelo ativo: <b>{{ active_model_global.model_family_id }}</b> · {{ active_model_global.algorithm|default:active_model_global.experiment }}</span>{% else %}<span>Nenhum modelo promovido</span>{% endif %}<span class="context-warning">UTC nos dados · hora local no calendário</span></div>{% endif %}
   <main class="page-shell">
     {% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
     {% block content %}{% endblock %}

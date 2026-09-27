@@ -14,71 +14,52 @@ SECOES = [
     (
         "Slide 1 · Problema", "0:00 – 0:40",
         [
-            "Todo verão a história se repete: uma onda de calor, todo mundo liga o ar-condicionado na mesma hora, "
-            "e o sistema elétrico inteiro é levado ao limite — não pelo consumo total do dia, mas por poucas horas de pico.",
-            "Demanda não é consumo. Dois dias podem gastar a mesma energia, mas um deles concentra tudo entre 18h e 21h. "
-            "É esse pico que dimensiona rede, geração e reserva — e que custa caro para a distribuidora.",
-            "E o consumidor? Ele não tem nenhum incentivo para sair do pico, porque a tarifa que ele vê é plana. "
-            "O sistema é dimensionado pelo pior dia, mas cobrado como se todo dia fosse igual.",
+            "Consumo e demanda não são sinônimos. Consumo é a energia acumulada em kWh; demanda é a potência exigida em cada instante. "
+            "Dois clientes podem consumir o mesmo no mês e produzir impactos muito diferentes na rede se um deles concentrar o uso em poucas horas.",
+            "E essa curva não depende apenas de calor. Temperatura, umidade, nebulosidade, calendário, hábitos locais e geração distribuída podem coincidir e amplificar rampas ou picos de forma diferente em cada região.",
+            "Hoje a tarifa plana não mostra ao consumidor quando deslocar sua carga flexível. A oportunidade é antecipar a forma da curva, não apenas o volume total.",
         ],
     ),
     (
-        "Slide 2 · Solução: os dois motores", "0:40 – 1:50",
+        "Slide 2 · Solução: os dois motores", "0:40 – 1:45",
         [
-            "A Predicta resolve isso com dois motores conectados por um único sinal.",
-            "À esquerda, só dados oficiais: carga, geração e programação diária do ONS, tarifas da ANEEL, "
-            "dez anos de clima em grade de dez quilômetros e a localização real de usinas e subestações.",
-            "O Motor 1 aprende com tudo isso e prevê a demanda das próximas 24 horas, região por região, "
-            "com faixa de confiança — e mede a pressão do sistema: quanta folga existe entre o que foi programado e o que vai acontecer.",
-            "Esse resultado vira um sinal horário auditável, que alimenta o Motor 2: o motor de tarifa dinâmica. "
-            "E aqui está o ponto que interessa à banca: o Motor 2 tem regras de proteção travadas. "
-            "A tarifa nunca sai da faixa de 85% a 130% da tarifa base, nunca varia mais de 10% de uma hora para a outra, "
-            "a fatura média do mês é neutra por construção — não é aumento disfarçado de receita — e, se qualquer dado falhar, a tarifa volta a ser a normal.",
-            "Na ponta direita, dois beneficiários: o consumidor descobre quando a energia está mais barata, "
-            "e a distribuidora vê sua curva achatar.",
+            "Este é o núcleo da solução. Entram carga, geração e DESSEM do ONS, tarifas da ANEEL, ativos geoespaciais e previsão meteorológica.",
+            "O clima não entra como valor isolado. Temperatura, chuva, vento e radiação são comparados a uma referência mensal de dez anos por subsistema. Anomalias e eventos persistentes ajudam o XGBoost a reconhecer quando o contexto local pode alterar a curva.",
+            "O Motor 1 gera vinte e quatro previsões diretas, de H01 a H24, com P10, P50 e P90. Só publica com carga recente, clima completo, horas sem duplicidade e intervalos coerentes.",
+            "O contrato auditável leva previsão, drivers, origem e qualidade ao Motor 2. A tarifa fica entre 85% e 130% da base, varia no máximo 10% por hora, mantém neutralidade com tolerância de 1%, limita a fatura a mais 20% e volta a 1,0 se o dado falhar.",
         ],
     ),
     (
-        "Slide 3 · Demo ao vivo", "1:50 – 2:30",
+        "Slide 3 · Demo ao vivo", "1:45 – 2:25",
         [
             "Deixa eu mostrar isso funcionando. [ABRIR /produto/]",
-            "Este é o mapa real das concessões da ANEEL. Escolho a [DISTRIBUIDORA] e simulo um dia real de operação. "
-            "[SIMULAR — janela de replay ensaiada]",
-            "Três curvas: o que o ONS programou, o que a Predicta previu e o que de fato aconteceu — a nossa previsão colada no realizado.",
-            "Para este cliente residencial, deslocar uma parte flexível do consumo vale [R$ X POR MÊS] na conta.",
-            "E na aba da carteira: com [Y]% de adesão em [N] clientes, o pico da carteira cai [Z] MW. "
-            "Isso, escalado para a base inteira da distribuidora, é capacidade de rede liberada na hora mais crítica do dia.",
+            "No mapa real da ANEEL, escolho a [DISTRIBUIDORA], um perfil tarifário e uma janela histórica. [SIMULAR]",
+            "Aqui estão as três curvas na mesma hora: programação DESSEM, previsão Predicta e carga realizada. Abaixo, o cliente vê o sinal horário e a economia potencial.",
+            "Na visão da distribuidora, ajusto a adesão da carteira e mostro quanto o pico cai em MW, preservando a energia total do dia.",
         ],
     ),
     (
-        "Slide 4 · Confiança e rastreabilidade", "2:30 – 3:10",
+        "Slide 4 · Precisão contra DESSEM", "2:25 – 3:10",
         [
-            "E dá para confiar nesses números? Três razões.",
-            "Primeira: só usamos fontes oficiais — ONS, ANEEL e bases climáticas públicas. Nada foi inventado.",
-            "Segunda: cada tarifa emitida carrega uma espécie de nota fiscal de dados — o carimbo de onde veio cada insumo. "
-            "Qualquer valor que aparecer na tela pode ser reproduzido e auditado depois, item por item.",
-            "Terceira: o modelo foi congelado e confrontado com 30 dias reais que ele nunca tinha visto. "
-            "Resultado: erro de 2,3% contra 4,5% do método tradicional no Sudeste — metade do erro. "
-            "No Sul, 3,3% contra 6,7%. E nas horas de calor extremo, quando mais importa, o erro se mantém em cerca de 2%.",
+            "A comparação usa uma régua única. Selecionamos as 672 horas em que existem Predicta, DESSEM e carga realizada. Para cada previsão, somamos o erro absoluto horário e dividimos pela carga realizada total. Esse é o WAPE: quanto menor, melhor.",
+            "A Predicta teve 12,5% menos erro no Norte, 47,7% no Nordeste, 19,2% no Sul e 36,4% no Sudeste/Centro-Oeste em relação ao DESSEM.",
+            "Esses percentuais são redução relativa do erro, não diferença de carga. Por exemplo: no Sudeste/Centro-Oeste, o WAPE caiu de 3,62% no DESSEM para 2,30% na Predicta.",
+            "A ressalva metodológica é clara: usamos a programação DESSEM publicada, mas o arquivo foi obtido retrospectivamente. A comparação histórica é válida; o próximo passo é arquivar cada emissão em tempo real para um teste operacional auditável.",
         ],
     ),
     (
         "Slide 5 · Modelo de negócio", "3:10 – 3:50",
         [
-            "Quem paga? A distribuidora: uma taxa de instalação e um fee de serviço recorrente.",
-            "O que ela ganha? A curva achatada — vende mais energia nos vales, sofre menos no pico, "
-            "e adia investimento em rede que só existe para atender poucas horas por ano.",
-            "O consumidor entra de graça: recebe a previsão de 24 horas pela própria distribuidora e economiza aderindo à tarifa dinâmica. "
-            "Quem quiser mais — horizonte estendido, otimização automática — paga um fee premium opcional para nós.",
-            "Todo mundo ganha: distribuidora, consumidor e o próprio sistema, que despacha menos térmica cara.",
+            "A distribuidora paga implantação e serviço recorrente. Em troca, ganha uma ferramenta para deslocar carga, reduzir coincidência de pico e testar capacidade evitada antes de investir na expansão da rede.",
+            "O consumidor recebe a previsão de 24 horas pela distribuidora e escolhe aderir. Serviços de horizonte estendido e otimização automática podem formar uma camada premium.",
+            "O valor é compartilhado: menor pico para a distribuidora, decisão simples para o consumidor e menos pressão nas horas críticas para o sistema.",
         ],
     ),
     (
         "Slide 6 · Viabilidade e roadmap", "3:50 – 4:25",
         [
-            "Onde estamos? Isso que vocês viram não é mockup: o pipeline roda de ponta a ponta hoje, "
-            "com quatro subsistemas do SIN e três anos de dados reais, e uma API pronta para integrar ao billing da distribuidora.",
-            "Sendo honestos sobre o que falta: colocar a previsão meteorológica ao vivo em operação — o código já existe — e a operação agendada 24/7.",
+            "Isso não é um mockup: o pipeline roda de ponta a ponta, cobre os quatro subsistemas com histórico de 2023 a 2026 e expõe uma API para integração ao faturamento.",
+            "Ainda precisamos operar a previsão meteorológica ao vivo e automatizar a execução contínua 24 por 7.",
             "O caminho natural é um piloto com uma distribuidora em ambiente regulatório experimental: "
             "primeiro em modo sombra, com a tarifa simulada rodando em paralelo à real; depois opt-in com clientes voluntários; depois escala.",
         ],
@@ -86,16 +67,14 @@ SECOES = [
     (
         "Slide 7 · Inovação", "4:25 – 4:50",
         [
-            "Por que ninguém fez isso ainda? As ferramentas que existem hoje — bandeiras tarifárias, tarifa branca — são estáticas e reativas. "
-            "A Predicta é preditiva, horária, localizada por região e com proteções para os dois lados da relação.",
-            "E a arquitetura de dois motores desacoplados significa que a distribuidora pluga o motor de tarifa no sistema que já tem, "
-            "sem reconstruir nada.",
+            "Bandeiras e tarifa branca são estáticas ou reativas. A Predicta é preditiva, horária, regional e protegida por limites automáticos.",
+            "Como os motores são desacoplados, a distribuidora integra o sinal ao sistema existente sem reconstruir toda a operação.",
         ],
     ),
     (
         "Slide 8 · Fechamento", "4:50 – 5:00",
         [
-            "A demanda vai continuar mudando com o clima. A tarifa precisa aprender a acompanhar.",
+            "A curva de carga responde ao clima, ao calendário e ao comportamento. A tarifa precisa aprender a acompanhar.",
             "Somos a Predicta — e buscamos uma distribuidora parceira para o piloto. Obrigada.",
         ],
     ),
@@ -104,9 +83,9 @@ SECOES = [
 OBSERVACOES = [
     "Placeholders [R$ X], [Y], [Z], [N] e [DISTRIBUIDORA]: preencher com os valores do cenário de demo congelado "
     "(ensaiar a simulação e anotar os números exibidos na tela).",
-    "Números de validação citados (verificados no repositório): SE/CO WAPE 2,3% (E3/XGBoost) vs 4,5% (baseline), "
-    "Sul 3,3% vs 6,7%, calor extremo ≈2,0% — holdout de 720h.",
-    "Ritmo alvo: ~150 palavras/minuto. Ensaiar 3× com cronômetro; a demo de 40s é o maior risco — ter screenshot de backup nos slides.",
+    "Validação citada: 672 horas comuns entre Predicta, DESSEM e realizado. Ganho relativo: N 12,5%; NE 47,7%; S 19,2%; SE/CO 36,4%.",
+    "Modelo apresentado: XGBoost com clima contextualizado por referência mensal de 10 anos, anomalias, percentis e eventos persistentes.",
+    "Ritmo alvo: 125–135 palavras/minuto. Ensaiar 3× com cronômetro; a demo de 40s é o maior risco — ter screenshot de backup nos slides.",
     "Se a demo falhar: seguir com o screenshot do slide 3 e citar os números memorizados sem quebrar a narrativa.",
 ]
 

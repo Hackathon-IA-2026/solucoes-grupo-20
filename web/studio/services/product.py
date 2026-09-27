@@ -30,10 +30,19 @@ DISPLAY_TZ = ZoneInfo(DISPLAY_TIMEZONE)
 SIGNAL = ROOT / 'outputs/contracts/system_signal_v1.parquet'
 TARIFFS = ROOT / 'data/processed/tariff/base_tariffs.parquet'
 E3_PREDICTIONS = ROOT / 'outputs/metrics/e3_real_pilot_predictions.parquet'
+MODEL_VALIDATION = ROOT / 'outputs/metrics/model_validation'
 LOAD_HISTORY = ROOT / 'data/processed/demand/load_hourly.parquet'
 E3_CLIMATE = ROOT / 'data/processed/climate/zone_climate_hourly_e3.parquet'
 SUPPLY_HISTORY = ROOT / 'data/processed/generation/supply_by_subsystem_hourly.parquet'
 DESSEM_SCHEDULE = ROOT / 'data/processed/generation/dessem_schedule_hourly.parquet'
+
+RESIDENTIAL_APPLIANCES = (
+    {'key': 'air_conditioner', 'name': 'Ar-condicionado', 'power_kw': 1.20, 'duration_hours': 3.0, 'usual_hours': (22, 23, 0, 1, 2, 3, 4, 5), 'guidance': 'Pré-resfrie o ambiente e reduza a potência nas horas mais caras.'},
+    {'key': 'air_fryer', 'name': 'Air fryer', 'power_kw': 1.50, 'duration_hours': 0.5, 'usual_hours': (11, 12, 13, 18, 19, 20, 21), 'guidance': 'Antecipe ou atrase o preparo dentro da rotina da refeição.'},
+    {'key': 'hair_dryer', 'name': 'Secador de cabelo', 'power_kw': 1.20, 'duration_hours': 0.25, 'usual_hours': (6, 7, 8, 18, 19, 20, 21), 'guidance': 'Concentre o uso curto em uma faixa de menor sinal.'},
+    {'key': 'dishwasher', 'name': 'Lava-louças', 'power_kw': 1.20, 'duration_hours': 1.5, 'usual_hours': (20, 21, 22, 23, 0, 1, 2, 3, 4, 5), 'guidance': 'Use o início programado após o último uso da cozinha.'},
+    {'key': 'ev_charging', 'name': 'Carregamento elétrico', 'power_kw': 7.40, 'duration_hours': 4.0, 'usual_hours': (21, 22, 23, 0, 1, 2, 3, 4, 5, 6), 'guidance': 'Programe o carregador para completar a carga antes da saída.'},
+)
 
 
 def _dataset(relative_path: str, local_path: Path) -> Path:
@@ -47,6 +56,39 @@ def _path_exists(relative_path: str, local_path: Path) -> bool:
 def _dessem_schedule() -> pd.DataFrame:
     path = _dataset('data/processed/generation/dessem_schedule_hourly.parquet', DESSEM_SCHEDULE)
     return read_table(path) if path.exists() else pd.DataFrame()
+
+
+def _contextual_predictions(region: str | None = None) -> tuple[pd.DataFrame, Path | None]:
+    tags = {'N': 'n', 'NE': 'ne', 'S': 's', 'SE/CO': 'seco'}
+    directory = _dataset('outputs/metrics/model_validation', MODEL_VALIDATION)
+    candidates: list[tuple[float, Path]] = []
+    if region in tags and directory.exists():
+        for path in directory.glob(f'auto_e3_*_{tags[region]}_2023_2026_predictions.parquet'):
+            metrics_path = path.with_name(path.name.replace('_predictions.parquet', '_metrics.csv'))
+            score = float('inf')
+            if metrics_path.exists():
+                metrics = read_table(metrics_path)
+                overall = metrics[
+                    metrics.experiment.astype(str).eq('E3')
+                    & metrics.segment.astype(str).eq('ALL')
+                    & metrics.horizon.astype(str).eq('ALL')
+                ]
+                if len(overall):
+                    score = float(overall.iloc[0].WAPE)
+            candidates.append((score, path))
+    legacy = _dataset('outputs/metrics/e3_real_pilot_predictions.parquet', E3_PREDICTIONS)
+    if candidates:
+        path = min(candidates, key=lambda item: item[0])[1]
+    elif legacy.exists():
+        path = legacy
+    else:
+        return pd.DataFrame(), None
+    predictions = read_table(path)
+    if 'experiment' in predictions.columns:
+        predictions = predictions[predictions.experiment.astype(str).eq('E3')]
+    if region:
+        predictions = predictions[predictions.subsystem_id.astype(str).eq(str(region))]
+    return predictions.copy(), path
 
 
 def available_regions():
@@ -104,12 +146,23 @@ def _window_descriptor(frame: pd.DataFrame, *, key: str, source: str, issue_time
         label = f"{first_local.strftime('%d/%m/%Y')} · {first_local.strftime('%Hh')}–{last_local.strftime('%Hh')}"
     else:
         label = f"{first_local.strftime('%d/%m %Hh')} → {last_local.strftime('%d/%m/%Y %Hh')}"
+    issue_local = issue_time_utc.tz_convert(DISPLAY_TZ) if issue_time_utc is not None else None
+    selection_label = (
+        f"Emissão {issue_local.strftime('%d/%m/%Y %Hh')} · horizonte até {last_local.strftime('%d/%m %Hh')}"
+        if issue_local is not None else label
+    )
     return {
         'key': key,
         'label': label,
+        'selection_label': selection_label,
         'local_date': first_local.date().isoformat(),
         'local_start': first_local.isoformat(),
         'local_end': last_local.isoformat(),
+        'local_end_label': last_local.strftime('%d/%m/%Y %Hh'),
+        'issue_local': issue_local.isoformat() if issue_local is not None else None,
+        'issue_local_date': issue_local.date().isoformat() if issue_local is not None else None,
+        'issue_local_time': issue_local.strftime('%H:%M') if issue_local is not None else None,
+        'issue_local_label': issue_local.strftime('%d/%m/%Y %Hh') if issue_local is not None else None,
         'timezone': DISPLAY_TIMEZONE,
         'source': source,
         'issue_time_utc': issue_time_utc.isoformat() if issue_time_utc is not None else None,
@@ -124,15 +177,10 @@ def replay_windows(region: str | None = None) -> list[dict]:
         return windows
     coverage = schedule[['interval_start_utc', 'subsystem_id']].copy()
     coverage['interval_start_utc'] = pd.to_datetime(coverage['interval_start_utc'], utc=True)
-    predictions_path = _dataset('outputs/metrics/e3_real_pilot_predictions.parquet', E3_PREDICTIONS)
     signal_path = _dataset('outputs/contracts/system_signal_v1.parquet', SIGNAL)
-    if predictions_path.exists():
-        p = read_table(predictions_path)
+    p, predictions_path = _contextual_predictions(region)
+    if predictions_path is not None and not p.empty:
         if {'issue_time_utc', 'interval_start_utc', 'subsystem_id'}.issubset(p.columns):
-            if 'experiment' in p.columns:
-                p = p[p['experiment'].astype(str).eq('E3')]
-            if region:
-                p = p[p['subsystem_id'].astype(str).eq(str(region))]
             p = p.copy()
             p['issue_time_utc'] = pd.to_datetime(p['issue_time_utc'], utc=True, errors='coerce')
             p['interval_start_utc'] = pd.to_datetime(p['interval_start_utc'], utc=True, errors='coerce')
@@ -148,7 +196,7 @@ def replay_windows(region: str | None = None) -> list[dict]:
                 if not ok:
                     continue
                 key = pd.Timestamp(issue).isoformat()
-                windows.append(_window_descriptor(g.sort_values('interval_start_utc').head(24), key=key, source='E3_BACKTEST', issue_time_utc=pd.Timestamp(issue)))
+                windows.append(_window_descriptor(g.sort_values('interval_start_utc').head(24), key=key, source='CONTEXTUAL_CLIMATE_BACKTEST', issue_time_utc=pd.Timestamp(issue)))
     if not windows and signal_path.exists():
         s = read_table(signal_path)
         s = s[s['zone_type'].astype(str).eq('SUBSYSTEM')].copy()
@@ -169,6 +217,30 @@ def replay_window(region: str, key: str | None) -> dict | None:
     if not key:
         return windows[-1]
     return next((w for w in windows if w['key'] == key), None)
+
+
+def _residential_guidance(hourly: pd.DataFrame) -> list[dict]:
+    work = hourly.copy()
+    work['local_time'] = pd.to_datetime(work['interval_start_utc'], utc=True).dt.tz_convert(DISPLAY_TZ)
+    work['hour'] = work['local_time'].dt.hour
+    tariff = pd.to_numeric(work['dynamic_tariff_rs_kwh'], errors='raise')
+    guidance = []
+    for appliance in RESIDENTIAL_APPLIANCES:
+        candidates = work[work['hour'].isin(appliance['usual_hours'])]
+        if candidates.empty:
+            candidates = work
+        best = candidates.loc[candidates['dynamic_tariff_rs_kwh'].idxmin()]
+        reference_rate = float(candidates['dynamic_tariff_rs_kwh'].max())
+        best_rate = float(best['dynamic_tariff_rs_kwh'])
+        energy_kwh = float(appliance['power_kw'] * appliance['duration_hours'])
+        guidance.append({
+            **appliance,
+            'energy_kwh': energy_kwh,
+            'recommended_time': best['local_time'].strftime('%d/%m às %Hh'),
+            'estimated_saving_per_use_rs': max(0.0, energy_kwh * (reference_rate - best_rate)),
+            'best_rate_rs_kwh': best_rate,
+        })
+    return guidance
 
 
 def _load_current_signal(region: str) -> pd.DataFrame:
@@ -228,16 +300,14 @@ def _signal_for_replay(region: str, replay_key: str | None) -> tuple[pd.DataFram
     w = replay_window(region, replay_key)
     if not w:
         raise ValueError(f'Não há janela de 24h com previsão Predicta e DESSEM completos para {region}.')
-    predictions_path = _dataset('outputs/metrics/e3_real_pilot_predictions.parquet', E3_PREDICTIONS)
+    predictions, predictions_path = _contextual_predictions(region)
     load_path = _dataset('data/processed/demand/load_hourly.parquet', LOAD_HISTORY)
     climate_path = _dataset('data/processed/climate/zone_climate_hourly_e3.parquet', E3_CLIMATE)
     supply_path = _dataset('data/processed/generation/supply_by_subsystem_hourly.parquet', SUPPLY_HISTORY)
-    if w['source'] == 'E3_BACKTEST' and predictions_path.exists():
+    if w['source'] in {'E3_BACKTEST', 'CONTEXTUAL_CLIMATE_BACKTEST'} and predictions_path is not None:
         if not load_path.exists():
             raise ValueError('Histórico de carga não encontrado; necessário para reconstruir D no replay.')
-        p = read_table(predictions_path)
-        if 'experiment' in p.columns:
-            p = p[p['experiment'].astype(str).eq('E3')]
+        p = predictions
         p['issue_time_utc'] = pd.to_datetime(p['issue_time_utc'], utc=True, errors='raise')
         p['interval_start_utc'] = pd.to_datetime(p['interval_start_utc'], utc=True, errors='raise')
         issue = pd.Timestamp(w['key'])
@@ -359,6 +429,7 @@ def simulate_customer(
     )
     optimized = consumption[['interval_start_utc']].copy()
     optimized['optimized_consumption_kwh'] = optimized_values
+    optimized['consumer_optimized_consumption_kwh'] = optimized_values
 
     info = distributor_info(cnpj) or {}
     meta = {
@@ -377,6 +448,11 @@ def simulate_customer(
     result['simulation_mode'] = str(mode or 'replay').lower()
     result['display_timezone'] = DISPLAY_TIMEZONE
     result['window'] = window
+    result['projection'] = {
+        'days': 30.4375,
+        'method': 'REPEAT_SELECTED_24H_AVERAGE_MONTH',
+        'is_forecast': False,
+    }
     result['dessem'] = {
         'source': 'ONS_DESSEM_BALANCO_GERAL',
         'hours': len(dessem),
@@ -421,10 +497,20 @@ def simulate_customer(
         'optimized_dynamic_cost_24h_rs': optimized_dynamic,
         'potential_savings_24h_rs': potential_savings,
         'potential_savings_pct': (100.0 * potential_savings / original_dynamic) if original_dynamic else 0.0,
-        'potential_savings_month_rs': potential_savings * 30.4375,
+        'potential_savings_month_rs': potential_savings * result['projection']['days'],
         'method': ('MINIMIZE_VARIANCE_WITH_ENERGY_PEAK_AND_COST_CONSTRAINTS' if optimization_objective == 'flatten'
                    else 'SHIFT_FLEXIBLE_ENERGY_TO_CHEAPEST_HOURS_WITH_HEADROOM'),
         'load_shape': summarize_load_shift(hourly.consumption_kwh, hourly.optimized_consumption_kwh),
+        'is_illustrative': True,
+    }
+    result['consumer'] = {
+        **optimization_meta,
+        'current_cost_24h_rs': original_dynamic,
+        'optimized_cost_24h_rs': optimized_dynamic,
+        'savings_24h_rs': potential_savings,
+        'savings_month_rs': potential_savings * result['projection']['days'],
+        'savings_pct': 100.0 * potential_savings / original_dynamic if original_dynamic else 0.0,
+        'guidance': _residential_guidance(hourly),
         'is_illustrative': True,
     }
     participating = int(np.floor(portfolio_customers * participation_pct / 100 + 0.5))
@@ -441,6 +527,9 @@ def simulate_customer(
         'participating_customers': participating,
         'participation_pct': 100 * participating / portfolio_customers,
         'requested_participation_pct': float(participation_pct),
+        'customer_savings_24h_rs': potential_savings * participating,
+        'customer_savings_month_rs': potential_savings * participating * result['projection']['days'],
+        'savings_scope': 'PARTICIPATING_CONSUMERS_NOT_DISTRIBUTOR_PROFIT',
         'peak_before_mw': shape['peak_before_kw'] / 1000,
         'peak_after_mw': shape['peak_after_kw'] / 1000,
         'peak_reduction_mw': (shape['peak_before_kw'] - shape['peak_after_kw']) / 1000,

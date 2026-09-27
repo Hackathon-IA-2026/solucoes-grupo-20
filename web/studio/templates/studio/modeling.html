@@ -2,24 +2,31 @@
 {% load date_display %}
 {% block title %}Modelagem · Predicta{% endblock %}
 {% block content %}
-<section class="page-header"><div><p class="eyebrow">3 · Modelagem</p><h1>Treine uma configuração antes de promovê-la</h1><p>Escolha features, algoritmo e janela histórica. Esta etapa sempre termina em <b>validação held-out</b>; ela não altera o modelo ativo do produto.</p></div><div class="info-callout"><b>Quando entra XGBoost?</b> Aqui. Ele usa exatamente as mesmas features e o mesmo split temporal do Ridge, permitindo uma comparação justa.</div></section>
+<section class="page-header"><div><p class="eyebrow">3 · Modelagem</p><h1>Treine uma configuração antes de promovê-la</h1><p>Escolha features, algoritmo e janela histórica. Esta etapa sempre termina em <b>validação held-out</b>; ela não altera o modelo ativo do produto.</p></div>
+<details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+  <span class="how-kicker">Playground · Modelagem</span><h3>Ajuste de modelo sem risco</h3>
+  <p>Este é o laboratório: teste combinações de informações históricas e climáticas, algoritmos e janelas de treino. Nada aqui muda o que o Produto usa.</p>
+  <ul><li><b>Quando usar:</b> após atualizar dados ou quando quiser testar uma hipótese de melhoria.</li><li><b>O que observar:</b> o resultado no holdout — só promova se o WAPE cair de forma consistente.</li></ul>
+  <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+</div></details>
+<div class="info-callout"><b>Quando entra XGBoost?</b> Aqui. Ele usa exatamente as mesmas features e o mesmo split temporal do Ridge, permitindo uma comparação justa.</div></section>
 
 <section class="panel">
   <div class="panel-head"><div><p class="eyebrow">Histórico disponível</p><h2>Escolha a janela de modelagem</h2></div><a href="{% url 'studio:data' %}">adicionar anos →</a></div>
   {% if history.consolidated %}<p><b>{% human_date history.start %}</b> → <b>{% human_date history.end %}</b> · {{ history.rows }} linhas consolidadas.</p>{% else %}<div class="warning-box">Ainda não há histórico consolidado. Vá para Dados e adicione anos do ONS.</div>{% endif %}
-  <div class="coverage-row"><span><b>E1</b> usa todo o histórico ONS selecionado.</span><span><b>E2</b> clima: {% if history.climate_coverage.E2.exists %}{% human_date history.climate_coverage.E2.start %} → {% human_date history.climate_coverage.E2.end %}{% else %}não gerado{% endif %}</span><span><b>E3</b> clima/contexto: {% if history.climate_coverage.E3.exists %}{% human_date history.climate_coverage.E3.start %} → {% human_date history.climate_coverage.E3.end %}{% else %}não gerado{% endif %}</span></div>
-  <small class="help-text">Se você escolher uma janela maior que a cobertura climática, E2/E3 serão <b>automaticamente recortados para a interseção real ONS + clima</b>. O log mostra a janela efetiva. E1 continua podendo usar todo o histórico ONS.</small>
+  <div class="coverage-row"><span><b>Histórico</b>: todo o período ONS selecionado.</span><span><b>Clima observado</b>: {% if history.climate_coverage.E2.exists %}{% human_date history.climate_coverage.E2.start %} → {% human_date history.climate_coverage.E2.end %}{% else %}não gerado{% endif %}</span><span><b>Clima contextualizado</b>: {% if history.climate_coverage.E3.exists %}{% human_date history.climate_coverage.E3.start %} → {% human_date history.climate_coverage.E3.end %}{% else %}não gerado{% endif %}</span></div>
+  <small class="help-text">Se a janela escolhida superar a cobertura climática, ela será <b>automaticamente recortada para a interseção real ONS + clima</b>. O log mostra o período efetivamente usado.</small>
 </section>
 
 <section class="panel modeling-workbench">
   <div class="panel-head"><div><p class="eyebrow">Configuração</p><h2>Validar modelo</h2><p>O sistema treina 24 modelos diretos (H01–H24), calibra p10/p90 antes do teste e mede MAE, RMSE, WAPE e cobertura.</p></div></div>
   <form method="post" action="{% url 'studio:run_stage' validate_stage.id %}" id="modeling-form">{% csrf_token %}
     <div class="form-grid">
-      <label class="field"><span>Features</span><select name="experiment"><option value="E1">E1 · histórico + calendário</option><option value="E2">E2 · + clima bruto</option><option value="E3" selected>E3 · + anomalias/eventos</option></select></label>
+      <label class="field"><span>Informações utilizadas</span><select name="experiment"><option value="E1">Histórico e calendário</option><option value="E2">Clima observado</option><option value="E3" selected>Clima contextualizado</option></select></label>
       <label class="field"><span>Algoritmo</span><select name="algorithm" id="algorithm-select"><option value="ridge">Ridge</option><option value="xgboost">XGBoost</option></select><small>Ridge é o baseline linear; XGBoost captura relações não lineares.</small></label>
       <label class="field"><span>Subsistema</span><select name="subsystem"><option value="SE/CO">SE/CO</option><option value="N">N</option><option value="NE">NE</option><option value="S">S</option></select></label>
       <label class="field"><span>Histórico: início</span><input type="date" name="history_start"><small>Opcional. Ex.: 2022-01-01.</small></label>
-      <label class="field"><span>Histórico: fim</span><input type="date" name="history_end"><small>Opcional. O teste será retirado da cauda da janela efetiva. Para E2/E3, a janela efetiva é limitada pela cobertura climática.</small></label>
+      <label class="field"><span>Histórico: fim</span><input type="date" name="history_end"><small>Opcional. O teste será retirado da cauda da janela efetiva, limitada pela cobertura climática quando aplicável.</small></label>
       <label class="field"><span>Holdout de teste</span><input type="number" name="test_hours" value="720"><small>720 h = 30 dias finais nunca usados no treino.</small></label>
       <label class="field"><span>Calibração p10–p90</span><input type="number" name="calibration_hours" value="720"></label>
       <label class="field ridge-param"><span>Ridge alpha</span><input type="number" step="0.1" name="alpha" value="1.0"></label>

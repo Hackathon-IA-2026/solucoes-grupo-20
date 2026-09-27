@@ -3,11 +3,21 @@
 {% block content %}
 <section class="page-header">
   <div>
-    <p class="eyebrow">2.5 · Clima & geração</p>
-    <h1>Eventos climáticos, localização de usinas e resposta de demanda</h1>
-    <p>Esta visão conecta <b>onde estão as usinas</b> com <b>onde os eventos climáticos aparecem</b> e resume como isso se relaciona com carga e geração no subsistema. É uma camada explicativa do MVP: ajuda a entender <i>por que</i> o sinal sistêmico pode subir ou cair.</p>
+    <p class="eyebrow">Clima &amp; geração</p>
+    <h1>Onde o clima encontra o sistema elétrico</h1>
+    <p>O mapa conecta <b>onde estão as usinas</b> com <b>onde os eventos climáticos aparecem</b> — e mostra como isso mexe com a demanda e a geração do subsistema. É o contexto territorial por trás do sinal que alimenta a tarifa.</p>
   </div>
-  <div class="warning-box narrow"><b>Leitura correta:</b> o mapa mostra um proxy regional. Os pontos climáticos são representativos; a proximidade planta-evento é uma aproximação espacial útil para o MVP, não um laudo operacional do ONS.</div>
+  <details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+    <span class="how-kicker">Clima &amp; geração · como funciona</span><h3>Como ler esta tela</h3>
+    <ol>
+      <li><b>Localização:</b> partimos da posição geográfica das usinas no subsistema.</li>
+      <li><b>Evento climático:</b> a data escolhida mostra onde há calor, chuva, vento ou tempestade nos pontos representativos.</li>
+      <li><b>Exposição:</b> estimamos quais usinas ficam próximas dos pontos com evento (até ~300 km).</li>
+      <li><b>Relação com o sistema:</b> na análise detalhada você vê correlações e variações de carga/geração em horas com evento.</li>
+    </ol>
+    <p><b>Leitura correta:</b> o mapa é um proxy regional do MVP. A proximidade usina–evento é uma aproximação espacial útil, não um laudo operacional do ONS.</p>
+    <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+  </div></details>
 </section>
 
 <section class="panel">
@@ -17,7 +27,7 @@
       {% for r in regions %}<option value="{{ r.id }}" {% if r.id == selected_region %}selected{% endif %}>{{ r.id }}</option>{% endfor %}
     </select><small>O mapa é recortado para as concessões associadas ao subsistema do MVP.</small></label>
     <label class="field"><span>Data local do evento ({{ territory.subsystem_id }})</span><select name="event_date">
-      {% for d in territory.available_dates %}<option value="{{ d|date:'Y-m-d' }}" {% if d|date:'Y-m-d' == selected_event_date %}selected{% endif %}>{{ d|date:'d/m/Y' }}</option>{% empty %}<option value="">Nenhuma data E3 disponível</option>{% endfor %}
+      {% for d in territory.available_dates %}<option value="{{ d|date:'Y-m-d' }}" {% if d|date:'Y-m-d' == selected_event_date %}selected{% endif %}>{{ d|date:'d/m/Y' }}</option>{% empty %}<option value="">Nenhuma data climática disponível</option>{% endfor %}
     </select><small>A data usa calendário de São Paulo para não misturar leitura operacional e UTC.</small></label>
     <div class="territory-filter-actions"><button class="button primary" type="submit">Atualizar visão territorial</button></div>
   </form>
@@ -25,45 +35,34 @@
 
 <section class="result-hero territory-hero">
   <div><span>Usinas mapeadas</span><strong>{{ territory.summary.plant_count }}</strong><small>catálogo georreferenciado do MVP</small></div>
-  <div><span>Pontos com evento ativo</span><strong>{{ territory.summary.active_event_points }}</strong><small>na data {{ selected_event_date|default:'—' }}</small></div>
-  <div><span>Usinas próximas de evento</span><strong>{{ territory.summary.plants_near_events }}</strong><small>até ~300 km do ponto representativo</small></div>
-  <div><span>Capacidade próxima de evento</span><strong>{% if territory.summary.capacity_near_events_mw %}{{ territory.summary.capacity_near_events_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>proxy de exposição regional</small></div>
+  <div><span>Usinas próximas de evento</span><strong>{{ territory.summary.plants_near_events }}</strong><small>{% if territory.summary.capacity_near_events_mw %}{{ territory.summary.capacity_near_events_mw|floatformat:0 }} MW expostos · {% endif %}{{ territory.summary.active_event_points }} pontos ativos em {{ selected_event_date|default:'—' }}</small></div>
   <div><span>Carga média do dia</span><strong>{% if territory.summary.avg_load_mw %}{{ territory.summary.avg_load_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>pico {% if territory.summary.peak_load_mw %}{{ territory.summary.peak_load_mw|floatformat:0 }} MW{% else %}—{% endif %}</small></div>
   <div><span>Geração média do dia</span><strong>{% if territory.summary.avg_generation_mw %}{{ territory.summary.avg_generation_mw|floatformat:0 }} MW{% else %}—{% endif %}</strong><small>contexto observado no subsistema</small></div>
 </section>
 
-<div class="product-layout real-map-layout territory-layout">
-  <section class="panel map-panel real-map-panel">
-    <div class="panel-head"><div><h2>Mapa real: usinas × eventos</h2><p>Círculos escuros = usinas. Círculos coloridos = pontos climáticos representativos. Usinas em vermelho estão próximas de algum evento regional na data selecionada.</p></div></div>
-    <div class="real-map-wrap territory-map-wrap"><svg id="territory-map" class="concession-map" viewBox="0 0 920 720" role="img" aria-label="Mapa territorial com usinas e eventos climáticos"></svg><div id="territory-tooltip" class="map-tooltip" hidden></div></div>
-    <div class="map-key territory-key">
-      <span><i class="dot plant"></i>Usina</span>
-      <span><i class="dot exposed"></i>Usina próxima de evento</span>
-      <span><i class="dot heat"></i>Calor</span>
-      <span><i class="dot rain"></i>Chuva</span>
-      <span><i class="dot wind"></i>Vento</span>
-      <span><i class="dot storm"></i>Tempestade</span>
-      <small>O fundo usa o mapa real de concessões como referência territorial do MVP.</small>
+<section class="panel map-panel real-map-panel">
+  <div class="panel-head"><div><h2>Mapa real: usinas × eventos</h2><p>Clique nas legendas para comparar apenas os eventos e fontes que interessam. Marcadores com contorno vermelho estão próximos de um evento ativo.</p></div></div>
+  <div class="real-map-wrap territory-map-wrap"><svg id="territory-map" class="concession-map" viewBox="0 0 920 720" role="img" aria-label="Mapa territorial com usinas e eventos climáticos"></svg><div id="territory-tooltip" class="map-tooltip" hidden></div></div>
+  <div class="territory-layer-controls" aria-label="Filtros das camadas do mapa">
+    <div class="territory-filter-group">
+      <b>Eventos climáticos</b>
+      <button type="button" class="map-filter is-active" data-map-filter="event-heat" aria-pressed="true"><i class="legend-icon heat">☀</i>Calor</button>
+      <button type="button" class="map-filter is-active" data-map-filter="event-rain" aria-pressed="true"><i class="legend-icon rain">●</i>Chuva</button>
+      <button type="button" class="map-filter is-active" data-map-filter="event-wind" aria-pressed="true"><i class="legend-icon wind">≋</i>Vento</button>
+      <button type="button" class="map-filter is-active" data-map-filter="event-storm" aria-pressed="true"><i class="legend-icon storm">ϟ</i>Tempestade</button>
+      <button type="button" class="map-filter is-active" data-map-filter="event-cold" aria-pressed="true"><i class="legend-icon cold">✣</i>Frio</button>
     </div>
-  </section>
-
-  <section class="panel product-form-panel">
-    <div class="panel-head"><div><h2>Como ler esta tela</h2><p>Ela foi desenhada para públicos diferentes: negócio, dados e operação.</p></div></div>
-    <div class="method-box">
-      <ol>
-        <li><b>Localização:</b> a tela parte da posição geográfica das usinas no subsistema.</li>
-        <li><b>Evento climático:</b> a data escolhida mostra onde há calor, chuva, vento ou tempestade nos pontos representativos.</li>
-        <li><b>Exposição:</b> estimamos quais usinas ficam próximas dos pontos com evento.</li>
-        <li><b>Relação com o sistema:</b> abaixo você vê correlações e variações médias de carga/geração em horas com evento.</li>
-      </ol>
+    <div class="territory-filter-group">
+      <b>Fontes de geração</b>
+      <button type="button" class="map-filter is-active" data-map-filter="plant-hydro" aria-pressed="true"><i class="legend-icon hydro">◆</i>Hídrica</button>
+      <button type="button" class="map-filter is-active" data-map-filter="plant-wind" aria-pressed="true"><i class="legend-icon plant-wind">Y</i>Eólica</button>
+      <button type="button" class="map-filter is-active" data-map-filter="plant-solar" aria-pressed="true"><i class="legend-icon solar">■</i>Solar</button>
+      <button type="button" class="map-filter is-active" data-map-filter="plant-fossil" aria-pressed="true"><i class="legend-icon fossil">⬢</i>Térmica</button>
+      <button type="button" class="map-filter is-active" data-map-filter="plant-nuclear" aria-pressed="true"><i class="legend-icon nuclear">⊙</i>Nuclear</button>
     </div>
-    <div class="explain-grid small-grid">
-      {% for note in territory.notes %}
-        <div><p>{{ note }}</p></div>
-      {% endfor %}
-    </div>
-  </section>
-</div>
+    <small><i class="exposure-ring"></i> contorno vermelho = usina próxima de evento · clique para ocultar ou exibir o conjunto</small>
+  </div>
+</section>
 
 <div class="two-col">
   <section class="panel">
@@ -76,6 +75,8 @@
   </section>
 </div>
 
+<details class="collapsible-analysis panel">
+<summary>Análise detalhada · correlações, impacto de eventos, usinas e matriz por fonte</summary>
 <div class="two-col">
   <section class="panel">
     <div class="panel-head"><div><h2>Correlações principais</h2><p>Resumo exploratório de relação entre clima, geração e demanda no histórico disponível.</p></div></div>
@@ -158,6 +159,7 @@
     {% else %}<div class="empty-state">Sem agregados por fonte.</div>{% endif %}
   </section>
 </div>
+</details>
 
 {{ territory.timeline|json_script:'territory-timeline-data' }}
 {{ territory.map_payload|json_script:'territory-map-data' }}

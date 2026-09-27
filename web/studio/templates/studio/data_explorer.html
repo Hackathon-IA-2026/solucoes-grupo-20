@@ -2,7 +2,14 @@
 {% load date_display %}
 {% block title %}Dados · Predicta{% endblock %}
 {% block content %}
-<section class="page-header"><div><p class="eyebrow">1 · Dados</p><h1>Monte e inspecione a base histórica</h1><p>Esta tela responde duas perguntas: <b>quais dados temos?</b> e <b>o que realmente entra no pipeline?</b>. Adicione anos do ONS antes de um novo ciclo de treino; o histórico consolidado é reconstruído sem apagar o RAW.</p></div><div class="info-callout"><b>Regra do MVP:</b> dados brutos são preservados. Treino usa os artefatos processados e versionados, não arquivos editados manualmente.</div></section>
+<section class="page-header"><div><p class="eyebrow">1 · Dados</p><h1>Monte e inspecione a base histórica</h1><p>Esta tela responde duas perguntas: <b>quais dados temos?</b> e <b>o que realmente entra no pipeline?</b>. Adicione anos do ONS antes de um novo ciclo de treino; o histórico consolidado é reconstruído sem apagar o RAW.</p></div>
+<details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+  <span class="how-kicker">Playground · Dados</span><h3>Atualização de datasets</h3>
+  <p>Aqui você baixa e consolida os dados oficiais que alimentam tudo: carga e geração do ONS, tarifas da ANEEL e clima em grade.</p>
+  <ul><li><b>Quando usar:</b> antes de um novo ciclo de treino, ou quando um novo mês/ano de dados oficiais é publicado.</li><li><b>O que observar:</b> período coberto, ausências e schema de cada artefato na prévia.</li><li><b>Segurança:</b> dados brutos nunca são apagados; o treino usa apenas artefatos processados e versionados.</li></ul>
+  <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+</div></details>
+<div class="info-callout"><b>Regra do MVP:</b> dados brutos são preservados. Treino usa os artefatos processados e versionados, não arquivos editados manualmente.</div></section>
 
 <div class="two-col">
 <section class="panel">

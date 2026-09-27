@@ -1,0 +1,47 @@
+{
+  "validation_slug": "e1_ridge_n_auto_20260916_334e29af",
+  "experiment": "E1",
+  "algorithm": "ridge",
+  "subsystem_id": "N",
+  "history_start_requested": null,
+  "history_end_requested": "2026-09-16",
+  "load_period_effective": {
+    "start": "2023-01-01 03:00:00+00:00",
+    "end": "2026-09-16 23:00:00+00:00",
+    "rows": 162585
+  },
+  "climate_period_effective": {
+    "start": null,
+    "end": null,
+    "rows": 0
+  },
+  "availability_window": {
+    "requested_start": null,
+    "requested_end": "2026-09-16",
+    "load_start": "2023-01-01 03:00:00+00:00",
+    "load_end": "2026-09-16 23:00:00+00:00",
+    "climate_start": null,
+    "climate_end": null,
+    "effective_start": "2023-01-01 03:00:00+00:00",
+    "effective_end": "2026-09-16 23:00:00+00:00",
+    "adjusted_to_common_overlap": false
+  },
+  "test_hours": 720,
+  "calibration_hours": 720,
+  "metrics": {
+    "subsystem_id": "N",
+    "experiment": "E1",
+    "segment": "ALL",
+    "horizon": "ALL",
+    "n_rows": 720.0,
+    "MAE": 170.53223665787814,
+    "RMSE": 236.2343552730922,
+    "WAPE": 0.01750973469392116,
+    "p10_p90_coverage": 0.8611111111111112,
+    "algorithm": "ridge"
+  },
+  "xgboost_params": null,
+  "ridge_alpha": 1.0,
+  "metrics_output": "outputs/metrics/model_validation/e1_ridge_n_aligned_20260916_metrics.csv",
+  "predictions_output": "outputs/metrics/model_validation/e1_ridge_n_aligned_20260916_predictions.parquet"
+}

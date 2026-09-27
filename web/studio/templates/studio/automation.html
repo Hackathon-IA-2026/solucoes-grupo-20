@@ -6,8 +6,14 @@
   <div>
     <p class="eyebrow">Automação ponta a ponta</p>
     <h1>Um botão para reconstruir ciência, modelos e operação 24h</h1>
-    <p>Esta tela executa o fluxo completo em ordem segura: histórico ONS → tarifas → <b>Climate Store local-first</b> → clima e baseline de 10 anos → features E3 → validação Ridge/XGBoost → treino dos 24 horizontes para N, NE, SE/CO e S → seleção por WAPE → previsão meteorológica operacional → publicação do <code>system_signal_v1</code>.</p>
+    <p>Esta tela executa o fluxo completo em ordem segura: histórico ONS → tarifas → <b>Climate Store local-first</b> → clima e referência de 10 anos → contexto climático → validação → treino dos 24 horizontes para N, NE, SE/CO e S → seleção por WAPE → previsão meteorológica operacional → publicação do sinal.</p>
   </div>
+  <details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+    <span class="how-kicker">Playground · Automação</span><h3>O botão que reconstrói tudo</h3>
+    <p>Executa todas as etapas do pipeline na ordem correta, por região, e escolhe automaticamente o melhor modelo (menor WAPE) para cada subsistema.</p>
+    <ul><li><b>Quando usar:</b> após uma atualização grande de dados, ou para reproduzir o sistema do zero.</li><li><b>O que observar:</b> o log de etapas e os bloqueios — a automação nunca publica um sinal operacional com dado defasado.</li></ul>
+    <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+  </div></details>
   <div class="warning-box narrow"><b>Importante:</b> o operacional só é publicado quando a carga ONS está suficientemente fresca e existe previsão meteorológica real para H01–H24. Se o ONS estiver defasado, a automação treina normalmente, mas bloqueia a publicação operacional em vez de fingir que o dado é atual.</div>
 </section>
 
@@ -30,7 +36,7 @@
     <div class="form-grid automation-form-grid">
       <label class="field"><span>Histórico · ano inicial</span><input type="number" name="start_year" value="2023" min="2010" max="2030"><small>ONS e clima começam automaticamente aqui.</small></label>
       <label class="field"><span>Histórico · ano final</span><input type="number" name="end_year" value="2026" min="2010" max="2030"><small>O último ano é recortado ao dado efetivamente disponível.</small></label>
-      <label class="field"><span>Grade climática</span><select name="climate_grid_mode"><option value="adaptive" selected>Adaptativa 0,1° + todas as células de usinas</option><option value="full">Full grid Brasil 0,1° · muito pesado</option></select><small>Não existe mais “ano climático” único: E2/E3 acompanham todos os anos do histórico.</small></label>
+      <label class="field"><span>Grade climática</span><select name="climate_grid_mode"><option value="adaptive" selected>Adaptativa 0,1° + todas as células de usinas</option><option value="full">Grade Brasil 0,1° · muito pesada</option></select><small>As camadas climáticas acompanham todos os anos do histórico.</small></label>
       <label class="field"><span>Histórico climático</span><select name="climate_history_mode"><option value="local-first" selected>Local first · API somente para gaps</option><option value="local-only">Local only · nunca usar API histórica</option></select><small>Depois do backfill, use local-only para tornar treino e baseline independentes da API histórica.</small></label>
       <label class="field"><span>Climate Store</span><input type="text" name="climate_store_root" value="data/climate_store"><small>Preserve este diretório ao atualizar versões do projeto.</small></label>
       <label class="field"><span>Holdout de teste</span><div class="input-suffix"><input type="number" name="test_hours" value="720" min="168"><b>h</b></div><small>720h = 30 dias.</small></label>
@@ -48,8 +54,8 @@
         <label class="field"><span>XGBoost · learning rate</span><input type="number" step="0.01" name="learning_rate" value="0.05"></label>
         <label class="field"><span>XGBoost · subsample</span><input type="number" step="0.05" name="subsample" value="0.9"></label>
         <label class="field"><span>XGBoost · colsample</span><input type="number" step="0.05" name="colsample_bytree" value="0.9"></label>
-        <label class="field"><span>Open-Meteo · batch horário</span><input type="number" name="climate_batch_size" value="6" min="1" max="50"><small>Usado no histórico horário E2.</small></label>
-        <label class="field"><span>Open-Meteo · batch diário</span><input type="number" name="climate_daily_batch_size" value="24" min="1" max="100"><small>Usado no baseline/E3 diário; mistura fusos na mesma chamada para reduzir requests.</small></label>
+        <label class="field"><span>Open-Meteo · lote horário</span><input type="number" name="climate_batch_size" value="6" min="1" max="50"><small>Usado no histórico meteorológico horário.</small></label>
+        <label class="field"><span>Open-Meteo · lote diário</span><input type="number" name="climate_daily_batch_size" value="24" min="1" max="100"><small>Usado na referência e no contexto diário; mistura fusos na mesma chamada para reduzir requisições.</small></label>
         <label class="field"><span>Endpoint histórico</span><input type="text" name="climate_archive_url" placeholder="API pública (vazio) ou http://127.0.0.1:8080/v1/archive"><small>Para backfill 0,1° em alto volume, prefira endpoint local/self-hosted. API key, se houver, deve ficar em <code>PREDICTA_OPENMETEO_API_KEY</code>.</small></label>
         <label class="field"><span>Pausa entre batches</span><div class="input-suffix"><input type="number" step="0.5" name="climate_request_delay" value="2.0"><b>s</b></div></label>
         <label class="field"><span>Retries HTTP 429/5xx</span><input type="number" name="climate_max_retries" value="10" min="0" max="15"></label>
@@ -89,7 +95,7 @@
     <button class="button" type="submit">Verificar se posso usar LOCAL ONLY</button>
   </form>
   {% if climate_store_coverage %}<div class="mode-status {% if climate_store_coverage.ready_local_only %}replay{% else %}unavailable{% endif %}"><b>{{ climate_store_coverage.status }}</b><span>{% if climate_store_coverage.ready_local_only %}O histórico necessário está coberto localmente. Você pode treinar sem API histórica.{% else %}Ainda existem {{ climate_store_coverage.missing_ranges }} gaps célula/data no período verificado.{% endif %}</span></div>{% endif %}
-  <div class="method-box"><b>Modo recomendado depois do backfill:</b><p><code>climate_history_mode=local-only</code>. Nesse modo treino, E2, E3 e baselines históricos falham se houver uma lacuna local, em vez de acessar silenciosamente a API.</p></div>
+  <div class="method-box"><b>Modo recomendado depois da carga histórica:</b><p><code>climate_history_mode=local-only</code>. Nesse modo, treino e camadas climáticas falham se houver uma lacuna local, em vez de acessar silenciosamente a API.</p></div>
 </section>
 
 <section class="panel operational-refresh-panel">
@@ -112,7 +118,7 @@
     <div class="{% if automation_statuses.load %}ok{% endif %}"><b>{% if automation_statuses.load %}✓{% else %}—{% endif %}</b><span>Histórico ONS</span></div>
     <div class="{% if automation_statuses.climate_store %}ok{% endif %}"><b>{% if automation_statuses.climate_store %}✓{% else %}—{% endif %}</b><span>Climate Store local</span></div>
     <div class="{% if automation_statuses.tariffs %}ok{% endif %}"><b>{% if automation_statuses.tariffs %}✓{% else %}—{% endif %}</b><span>Tarifas ANEEL</span></div>
-    <div class="{% if automation_statuses.climate_e3 %}ok{% endif %}"><b>{% if automation_statuses.climate_e3 %}✓{% else %}—{% endif %}</b><span>Clima E3 + baseline</span></div>
+    <div class="{% if automation_statuses.climate_e3 %}ok{% endif %}"><b>{% if automation_statuses.climate_e3 %}✓{% else %}—{% endif %}</b><span>Clima contextualizado + referência</span></div>
     <div class="{% if automation_statuses.registry %}ok{% endif %}"><b>{% if automation_statuses.registry %}✓{% else %}—{% endif %}</b><span>Modelos regionais selecionados</span></div>
     <div class="{% if automation_statuses.operational_weather %}ok{% endif %}"><b>{% if automation_statuses.operational_weather %}✓{% else %}—{% endif %}</b><span>Weather forecast operacional</span></div>
     <div class="{% if automation_statuses.system_signal %}ok{% endif %}"><b>{% if automation_statuses.system_signal %}✓{% else %}—{% endif %}</b><span>system_signal_v1</span></div>

@@ -2,23 +2,69 @@
 {% load date_display %}
 {% block title %}Validação · Predicta{% endblock %}
 {% block content %}
-<section class="page-header"><div><p class="eyebrow">4 · Validação</p><h1>Compare configurações com o mesmo critério</h1><p>Esta página separa qualidade de modelo de escolha de deployment. Ridge e XGBoost devem ser comparados no mesmo holdout, com as mesmas features e horizontes.</p></div><div class="info-callout"><b>Leitura:</b> MAE/RMSE/WAPE menores são melhores. Cobertura p10–p90 próxima de 80% indica intervalos razoavelmente calibrados.</div></section>
+<section class="page-header validation-header">
+  <div><p class="eyebrow">Validação da previsão</p><h1>Predicta com clima contextualizado × DESSEM</h1><p>Comparamos as duas previsões com a carga que realmente ocorreu, nas mesmas horas e no mesmo subsistema.</p></div>
+  <details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+    <span class="how-kicker">Método de comparação</span><h3>Mesma régua para as duas previsões</h3>
+    <ol><li>Selecionamos apenas horas com Predicta, DESSEM e carga realizada disponíveis.</li><li>Calculamos o erro absoluto de cada previsão em relação à carga realizada.</li><li>Somamos os erros e dividimos pela carga realizada total. Esse percentual é o WAPE.</li></ol>
+    <p><b>Ganho de precisão</b> = (WAPE DESSEM − WAPE Predicta) ÷ WAPE DESSEM. Um ganho de 20% significa que a Predicta cometeu 20% menos erro que o DESSEM.</p>
+    <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+  </div></details>
+</section>
 
 {% if validation.exists %}
-<section class="panel"><div class="panel-head"><div><p class="eyebrow">Configurações validadas</p><h2>Ranking por WAPE agregado</h2></div></div><div class="validation-grid">{% for r in validation.runs %}{% if r.WAPE %}<a class="validation-card {% if r.best %}highlight{% endif %} {% if validation.selected.slug == r.slug %}selected{% endif %}" href="?run={{ r.slug }}"><div><span class="badge">{{ r.algorithm }}</span><span class="badge">{{ r.experiment }}</span></div><strong>{{ r.WAPE_pct|floatformat:2 }}%</strong><small>WAPE</small><dl><dt>MAE</dt><dd>{{ r.MAE|floatformat:0 }} MW</dd><dt>RMSE</dt><dd>{{ r.RMSE|floatformat:0 }} MW</dd><dt>P10–P90</dt><dd>{% if r.coverage_pct %}{{ r.coverage_pct|floatformat:1 }}%{% else %}—{% endif %}</dd><dt>Histórico</dt><dd>{% if r.history_start %}{% human_date r.history_start %}{% else %}auto{% endif %} → {% if r.history_end %}{% human_date r.history_end %}{% else %}último{% endif %}</dd></dl></a>{% endif %}{% endfor %}</div></section>
+<section class="validation-decision">
+  <div class="section-intro"><p class="eyebrow">Resultado por subsistema</p><h2>Quanto mais precisa foi a Predicta?</h2><p>O indicador principal é a redução relativa do erro. O WAPE mostra o tamanho do erro de cada previsão: quanto menor, melhor.</p></div>
+  <div class="regional-winners">
+  {% for comparison in validation.comparisons %}
+    <article class="regional-winner comparison-card">
+      <header><span class="region-label">{{ comparison.region }}</span><span class="winner-label">{{ comparison.dessem.rows }} horas comparadas</span></header>
+      {% if comparison.dessem %}
+      <div class="precision-gain"><strong>{{ comparison.dessem.gain_pct|floatformat:1 }}%</strong><span>menos erro que o DESSEM</span></div>
+      <div class="wape-comparison">
+        <div><span>DESSEM</span><b>{{ comparison.dessem.dessem_wape_pct|floatformat:2 }}%</b><small>WAPE</small></div>
+        <span class="comparison-arrow">→</span>
+        <div class="predicta"><span>Predicta</span><b>{{ comparison.dessem.predicta_wape_pct|floatformat:2 }}%</b><small>WAPE</small></div>
+      </div>
+      <p class="comparison-period">Mesmas horas entre {% human_date comparison.dessem.start %} e {% human_date comparison.dessem.end %} · {{ comparison.dessem.coverage_pct|floatformat:1 }}% da janela de validação.</p>
+      <a class="detail-link" href="?region={{ comparison.region|urlencode }}#technical-detail">Ver comparação de {{ comparison.region }} →</a>
+      {% else %}<p>Não há horas comuns suficientes para comparar com o DESSEM.</p>{% endif %}
+    </article>
+  {% endfor %}
+  </div>
+</section>
 
-<div class="two-col">
-<section class="panel"><div class="panel-head"><div><h2>WAPE H01–H24</h2><p>{{ validation.selected.algorithm }} / {{ validation.selected.experiment }}. Mostra onde o erro cresce com o horizonte.</p></div></div><div id="validation-horizon" class="chart tall"></div></section>
-<section class="panel"><div class="panel-head"><div><h2>Realizado × previsto</h2><p>Última origem completa do holdout; a faixa p10–p90 representa incerteza calibrada.</p></div></div>{% if validation.actual_chart %}<div id="validation-actual" class="chart tall"></div><small class="help-text">Issue time: {% human_date validation.actual_chart.issue_time %}</small>{% else %}<div class="empty-state">Previsões linha a linha não encontradas para esta validação.</div>{% endif %}</section>
-</div>
+<section class="comparison-method">
+  <div><span>1</span><b>Carga realizada</b><p>É a verdade observada pelo ONS e a referência comum.</p></div>
+  <div><span>2</span><b>Erro de cada previsão</b><p>Para cada hora: valor absoluto de realizado menos previsto.</p></div>
+  <div><span>3</span><b>WAPE comparável</b><p>Soma dos erros dividida pela soma da carga realizada.</p></div>
+  <div><span>4</span><b>Ganho da Predicta</b><p>Redução percentual do WAPE da Predicta frente ao WAPE DESSEM.</p></div>
+</section>
 
-<section class="panel"><div class="panel-head"><div><h2>O que foi obtido?</h2><p>Use esta tabela para decidir se vale congelar a configuração. Não selecione um vencedor olhando apenas H01 ou um único pico.</p></div></div>{% if validation.selected.load_period_effective %}<div class="method-box"><b>Dados efetivamente usados:</b> carga {% human_date validation.selected.load_period_effective.start %} → {% human_date validation.selected.load_period_effective.end %}. {% if validation.selected.climate_period_effective.start %}Clima {% human_date validation.selected.climate_period_effective.start %} → {% human_date validation.selected.climate_period_effective.end %}.{% else %}E1 não requer clima.{% endif %}</div>{% endif %}<div class="explain-grid"><div><b>WAPE agregado</b><p>{{ validation.selected.WAPE_pct|floatformat:2 }}%. Resume o erro absoluto em relação à carga total.</p></div><div><b>MAE</b><p>{{ validation.selected.MAE|floatformat:0 }} MW de erro absoluto médio.</p></div><div><b>RMSE</b><p>{{ validation.selected.RMSE|floatformat:0 }} MW. Erros grandes pesam mais.</p></div><div><b>Cobertura</b><p>{% if validation.selected.coverage_pct %}{{ validation.selected.coverage_pct|floatformat:1 }}% das observações dentro de p10–p90.{% else %}Não disponível.{% endif %}</p></div></div></section>
+<section class="validation-reading">
+  <div><b>O que entra na Predicta?</b><p>Histórico de carga, calendário, condições meteorológicas, anomalias e eventos climáticos contextualizados para cada subsistema.</p></div>
+  <div><b>Por que usar horas comuns?</b><p>Impede que uma previsão seja favorecida por ter sido avaliada em horários diferentes ou mais fáceis.</p></div>
+  <div><b>Limite da evidência</b><p>O histórico DESSEM foi obtido retrospectivamente. A comparação é válida contra a programação publicada, mas ainda não comprova disponibilidade operacional no instante de cada emissão.</p></div>
+</section>
+
+<section id="technical-detail" class="technical-detail">
+  <div class="section-intro"><p class="eyebrow">Evidência visual</p><h2>{{ validation.selected.region }} · previsão com clima contextualizado</h2><p>A curva abaixo permite explicar onde Predicta e DESSEM ficaram em relação à carga realizada.</p></div>
+  <div class="two-col">
+    <section class="panel"><div class="panel-head"><div><h2>Erro por horizonte</h2><p>WAPE da Predicta entre a primeira e a vigésima quarta hora prevista.</p></div></div><div id="validation-horizon" class="chart tall"></div></section>
+    <section class="panel"><div class="panel-head"><div><h2>Realizado × Predicta × DESSEM</h2><p>Última previsão completa de 24 horas da janela de validação.</p></div></div>{% if validation.actual_chart %}<div id="validation-actual" class="chart tall"></div><small class="help-text">Previsão emitida em {% human_date validation.actual_chart.issue_time %}</small>{% else %}<div class="empty-state">Previsões horárias não encontradas.</div>{% endif %}</section>
+  </div>
+  <section class="panel"><div class="panel-head"><div><h2>Como explicar o número</h2><p>Exemplo com os valores deste subsistema.</p></div></div>
+    {% for comparison in validation.comparisons %}{% if comparison.region == validation.selected.region and comparison.dessem %}
+    <div class="formula-example"><div><span>WAPE DESSEM</span><b>{{ comparison.dessem.dessem_wape_pct|floatformat:2 }}%</b></div><span>−</span><div><span>WAPE Predicta</span><b>{{ comparison.dessem.predicta_wape_pct|floatformat:2 }}%</b></div><span>÷</span><div><span>WAPE DESSEM</span><b>{{ comparison.dessem.dessem_wape_pct|floatformat:2 }}%</b></div><span>=</span><div class="result"><span>menos erro</span><b>{{ comparison.dessem.gain_pct|floatformat:1 }}%</b></div></div>
+    <p class="method-disclaimer">Cálculo feito sobre {{ comparison.dessem.rows }} observações horárias comuns. Não é a diferença entre as cargas previstas; é a redução relativa do erro total.</p>
+    {% endif %}{% endfor %}
+  </section>
+</section>
+
 {{ validation.horizon|json_script:'validation-horizon-data' }}
 {% if validation.actual_chart %}{{ validation.actual_chart|json_script:'validation-actual-data' }}{% endif %}
 {% else %}
-<section class="panel empty-state"><h2>Ainda não há configurações validadas pela nova área de Modelagem</h2><p>Vá para Modelagem, escolha Ridge ou XGBoost e execute o backtest. As métricas do piloto E0–E3 anterior continuam preservadas.</p><a class="button primary" href="{% url 'studio:modeling' %}">Ir para Modelagem</a></section>
+<section class="panel empty-state"><h2>A validação ainda não está disponível</h2><p>Execute o backtest da previsão com clima contextualizado para gerar as métricas.</p></section>
 {% endif %}
-
-{% if pilot_metrics.exists %}<section class="panel"><div class="panel-head"><div><p class="eyebrow">Experimento científico anterior</p><h2>E0 → E1 → E2 → E3 com Ridge</h2><p>Preservado para reproduzir exatamente a validação que fizemos no pipeline.</p></div></div><div class="metric-table-cards">{% for m in pilot_metrics.rows %}<article class="experiment-card {% if m.best_wape %}highlight{% endif %}"><span>{{ m.experiment }}</span><strong>{{ m.WAPE_pct|floatformat:2 }}%</strong><small>WAPE</small><dl><dt>MAE</dt><dd>{{ m.MAE|floatformat:0 }}</dd><dt>RMSE</dt><dd>{{ m.RMSE|floatformat:0 }}</dd></dl></article>{% endfor %}</div></section>{% endif %}
 {% endblock %}
-{% block scripts %}{% if validation.exists %}<script>const vh=JSON.parse(document.getElementById('validation-horizon-data').textContent);PredictaCharts.multiLine('validation-horizon',vh.labels,[{name:'WAPE',values:vh.wape}],{suffix:'%',minZero:true});{% if validation.actual_chart %}const va=JSON.parse(document.getElementById('validation-actual-data').textContent);PredictaCharts.multiLine('validation-actual',va.labels,[{name:'Realizado',values:va.actual},{name:'Previsto p50',values:va.predicted},{name:'p10',values:va.p10},{name:'p90',values:va.p90}],{});{% endif %}</script>{% endif %}{% endblock %}
+{% block scripts %}{% if validation.exists %}<script>const vh=JSON.parse(document.getElementById('validation-horizon-data').textContent);PredictaCharts.multiLine('validation-horizon',vh.labels,[{name:'WAPE Predicta',values:vh.wape}],{suffix:'%',minZero:true});{% if validation.actual_chart %}const va=JSON.parse(document.getElementById('validation-actual-data').textContent);PredictaCharts.multiLine('validation-actual',va.labels,[{name:'Realizado',values:va.actual},{name:'Predicta',values:va.predicted},{name:'DESSEM',values:va.dessem}],{});{% endif %}</script>{% endif %}{% endblock %}
