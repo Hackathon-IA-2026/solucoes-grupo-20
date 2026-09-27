@@ -18,6 +18,11 @@ def _select_tariff(base:pd.DataFrame,distributor_id:str,profile_id:str,post:str,
     if work.empty:raise ValueError(f'no base tariff for distributor={distributor_id} profile={profile_id}')
     work=work[work.tariff_post.astype(str).isin([str(post),'UNIQUE'])]
     stamp=pd.Timestamp(ts);stamp=stamp.tz_localize('UTC') if stamp.tzinfo is None else stamp.tz_convert('UTC');d=stamp.tz_convert(ZoneInfo(timezone_name)).date();vf=pd.to_datetime(work.valid_from,errors='coerce').dt.date;vt=pd.to_datetime(work.valid_to,errors='coerce').dt.date;work=work[(vf<=d)&(vt>=d)]
+    # A revised homologation supersedes the previous one when both are still valid on d
+    # (e.g. 2026-04-22→2027-04-21 revised from 2026-08-26): keep only the latest start per post.
+    if len(work)>1:
+        start=pd.to_datetime(work.valid_from,errors='coerce')
+        work=work[start.eq(start.groupby(work.tariff_post.astype(str)).transform('max'))]
     # ANEEL can publish duplicate rows for the same economic tariff because of
     # fields that are not part of the Predicta volumetric profile (for example,
     # an accessing agent). Collapse only economically identical duplicates.
