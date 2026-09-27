@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 BASE_DIR = Path(__file__).resolve().parents[2]
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'predicta-local-mvp-change-me')
 DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
@@ -8,7 +10,7 @@ configured_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost')
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
 ALLOWED_HOSTS = sorted({
     host.strip()
-    for host in [*configured_hosts, render_host, 'hackathon-ia-2026.onrender.com', '0.0.0.0']
+    for host in [*configured_hosts, render_host, 'predic-atano-g34dtbz0dtaz-34196584.us-west-2.elb.amazonaws.com','hackathon-ia-2026.onrender.com', '0.0.0.0']
     if host.strip()
 })
 
