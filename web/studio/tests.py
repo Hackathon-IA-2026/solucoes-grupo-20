@@ -52,6 +52,61 @@ class StudioWebSmokeTests(TestCase):
             response=self.client.get(reverse(f'studio:{name}'))
             self.assertEqual(response.status_code,200,name)
 
+    def test_product_page_supports_one_day_query_and_consumer_view(self):
+        response = self.client.get(reverse('studio:product'))
+        self.assertContains(response, 'Painel da distribuidora')
+        self.assertContains(response, 'Data e hora da emissão')
+        self.assertContains(response, 'id="issue-date"')
+        self.assertContains(response, 'id="issue-time"')
+        self.assertContains(response, 'Relógio simulado')
+        self.assertContains(response, '19/08/2026 20h')
+        self.assertContains(response, '20/08/2026 20h')
+        self.assertContains(response, 'Consultar previsão e simular cliente')
+        self.assertContains(response, 'R$ 0,9033/kWh')
+        self.assertNotContains(response, 'Cenário pronto')
+        self.assertNotContains(response, 'Resultados principais da demonstração')
+        self.assertNotContains(response, 'Menos erro que o DESSEM')
+        self.assertNotContains(response, 'Onde está a economia para uma residência?')
+        self.assertNotContains(response, 'Operacional ainda bloqueado metodologicamente')
+        self.assertNotContains(response, 'Modelo em operação')
+
+        self.assertEqual(response.context['selected_info']['sigla'], 'CEMIG-D')
+        self.assertEqual(response.context['selected_replay'], '2026-08-19T23:00:00+00:00')
+        self.assertIsNone(response.context['result'])
+
+        response = self.client.post(reverse('studio:product'), {
+            'region': 'SE/CO',
+            'cnpj': '06981180000116',
+            'distributor': 'CEMIG-D',
+            'profile': 'B1|Convencional pré-pagamento|Residencial|Residencial|Tarifa de Aplicação',
+            'simulation_mode': 'replay',
+            'replay_issue': '2026-08-19T23:00:00+00:00',
+            'monthly_kwh': '300',
+            'customer_type': 'residential',
+            'flexible_pct': '20',
+            'optimization_objective': 'flatten',
+            'portfolio_customers': '10000',
+            'participation_pct': '50',
+        })
+        self.assertContains(response, 'Consulta realizada')
+        self.assertContains(response, 'Menos erro que o DESSEM')
+        self.assertContains(response, 'Onde está a economia para uma residência?')
+        self.assertContains(response, 'class="consumer-heatbar"')
+        for appliance in ['Ar-condicionado', 'Air fryer', 'Secador de cabelo', 'Lava-louças', 'Carregamento elétrico']:
+            self.assertContains(response, appliance)
+        comparison = response.context['result']['comparison']
+        self.assertLess(comparison['predicta_wape_pct'], comparison['dessem_wape_pct'])
+        self.assertGreater(comparison['error_reduction_pct'], 70)
+        consumer = response.context['result']['consumer']
+        self.assertGreater(consumer['savings_month_rs'], 0)
+        self.assertEqual(len(consumer['guidance']), 5)
+
+    def test_territory_page_exposes_clickable_layer_filters(self):
+        response = self.client.get(reverse('studio:territory'))
+        self.assertContains(response, 'data-map-filter="event-wind"')
+        self.assertContains(response, 'data-map-filter="plant-wind"')
+        self.assertContains(response, 'data-map-filter="plant-hydro"')
+
     def test_tariff_profile_api_is_safe_without_processed_tariffs(self):
         response=self.client.get(reverse('studio:api_profiles'),{'cnpj':'00000000000000','region':'SE/CO'})
         self.assertEqual(response.status_code,200)

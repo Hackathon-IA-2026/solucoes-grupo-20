@@ -20,12 +20,13 @@
 \setbeamercolor{title}{fg=predicta}
 \setbeamercolor{structure}{fg=predicta}
 \setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=7mm,text margin right=7mm}
 \setbeamertemplate{footline}{%
   \hfill\scriptsize\textcolor{cinza}{Predicta · Hackathon 2026 · \insertframenumber/\inserttotalframenumber}\hspace{2mm}\vspace{1mm}}
 \setbeamerfont{frametitle}{series=\bfseries,size=\Large}
 
 \title{\Huge Predicta}
-\subtitle{Tarifa dinâmica inteligente: prever a demanda, achatar o pico}
+\subtitle{Tarifa dinâmica inteligente: antecipar a curva, reduzir o pico}
 \author{Equipe Predicta}
 \date{}
 
@@ -39,18 +40,19 @@
 \end{frame}
 
 % ---------- Slide 1 · Problema (0:00–0:40) ----------
-\begin{frame}{O sistema é dimensionado pelo pior dia}
+\begin{frame}{O custo está na forma da curva, não só no volume}
   \begin{columns}[T]
     \begin{column}{0.55\textwidth}
       \vspace{2mm}
-      \begin{itemize}\setlength\itemsep{3mm}
-        \item \textbf{Demanda $\neq$ consumo}: dois dias com o mesmo total de kWh podem exigir condições operativas muito diferentes.
-        \item \textbf{Calor extremo concentra carga} em poucas horas — o pico define o custo de rede, geração e reserva.
-        \item \textbf{O consumidor não tem incentivo} para sair do pico: a tarifa que ele vê é plana.
+      \begin{itemize}\setlength\itemsep{2.5mm}
+        \item \textbf{Consumo é energia acumulada} (kWh); \textbf{demanda é a potência requerida} em cada instante (kW ou MW).
+        \item O mesmo consumo mensal pode formar curvas muito diferentes. O que pressiona a operação é a \textbf{coincidência dos picos}.
+        \item Temperatura, umidade, nebulosidade, calendário, hábitos locais e geração distribuída se combinam de modo diferente em cada região.
+        \item A tarifa plana não sinaliza ao consumidor quando deslocar a parcela flexível do consumo.
       \end{itemize}
       \vspace{3mm}
       \begin{beamercolorbox}[rounded=true,sep=3mm]{block body}
-        \centering\textbf{\textcolor{laranja}{``Dimensionado pelo pior dia,\\ cobrado como se todo dia fosse igual.''}}
+        \centering\textbf{\textcolor{laranja}{``Não basta prever quanto será consumido.\\ É preciso antecipar quando a carga se concentra.''}}
       \end{beamercolorbox}
     \end{column}
     \begin{column}{0.42\textwidth}
@@ -66,45 +68,75 @@
   \end{columns}
 \end{frame}
 
-% ---------- Slide 2 · Solução: os dois motores (0:40–1:50) ----------
-\begin{frame}{A solução: dois motores, um sinal auditável}
+% ---------- Slide 2 · Solução: os dois motores (0:40–1:45) ----------
+\begin{frame}{Da previsão climática à tarifa protegida}
   \centering
+  \resizebox{\textwidth}{!}{%
   \begin{tikzpicture}[
       font=\scriptsize,
-      fonte/.style={draw=cinza,rounded corners=1pt,fill=white,minimum width=2.55cm,minimum height=0.52cm,align=center},
-      motor/.style={draw=predicta,very thick,rounded corners=3pt,fill=predicta!8,minimum width=3.1cm,minimum height=2.9cm,align=center},
-      saida/.style={draw=verde,thick,rounded corners=2pt,fill=verde!8,minimum width=2.9cm,minimum height=1.15cm,align=center},
-      seta/.style={-{Stealth[length=2.5mm]},thick,grafite}]
-    % Fontes de dados (colocar logos aqui)
-    \node[fonte] (f1) at (0,2.4) {ONS · Carga};
-    \node[fonte] (f2) at (0,1.7) {ONS · Geração};
-    \node[fonte] (f3) at (0,1.0) {ONS · DESSEM};
-    \node[fonte] (f4) at (0,0.3) {ANEEL · Tarifas};
-    \node[fonte] (f5) at (0,-0.4) {ERA5-Land · Clima 0,1$^{\circ}$};
-    \node[fonte] (f6) at (0,-1.1) {Ativos geoespaciais};
-    \node[fonte,dashed] (f7) at (0,-1.8) {Open-Meteo forecast$^{*}$};
-    % Motor 1
-    \node[motor] (m1) at (4.0,0.3) {\textbf{\normalsize Motor 1 · SIN}\\[1.5mm] Previsão de demanda\\ 24h por subsistema\\ (p10 · p50 · p90)\\[1mm] pressão de oferta\\ exposição climática};
-    % Sinal
-    \node[draw=laranja,very thick,rounded corners=2pt,fill=laranja!10,minimum height=0.8cm,align=center] (sig) at (7.6,0.3) {\textbf{system\_signal\_v1}\\ sinal horário auditável};
-    % Motor 2
-    \node[motor] (m2) at (11.2,0.3) {\textbf{\normalsize Motor 2 · Tarifa}\\[1.5mm] \textbf{Guardrails:}\\ piso/teto 0,85–1,30$\times$\\ rampa máx. $\pm$10\%/h\\ fatura média neutra\\ trava de +20\%/fatura\\ falhou o dado? $\to$ 1,0$\times$};
-    % Saídas
-    \node[saida] (s1) at (14.6,1.3) {\textbf{Consumidor}\\ quando gastar menos};
-    \node[saida] (s2) at (14.6,-0.7) {\textbf{Distribuidora}\\ curva achatada};
-    % Setas
-    \foreach \f in {f1,f2,f3,f4,f5,f6,f7} \draw[seta,cinza] (\f.east) -- ($(m1.west)+(0,0)$);
+      dado/.style={draw=cinza,rounded corners=1.5pt,fill=white,minimum width=2.45cm,minimum height=0.72cm,align=center},
+      clima/.style={draw=verde,very thick,rounded corners=3pt,fill=verde!8,minimum width=2.95cm,minimum height=3.35cm,align=center},
+      motor/.style={draw=predicta,very thick,rounded corners=3pt,fill=predicta!7,minimum width=3.35cm,minimum height=5.35cm,align=center},
+      sinal/.style={draw=laranja,very thick,rounded corners=2pt,fill=laranja!9,minimum width=1.85cm,minimum height=1.15cm,align=center},
+      saida/.style={draw=verde,thick,rounded corners=2pt,fill=verde!7,minimum width=2.25cm,minimum height=1.15cm,align=center},
+      seta/.style={-{Stealth[length=2.4mm]},thick,grafite}]
+
+    \node[dado] (ons) at (0,2.25) {\textbf{ONS}\\ carga · geração · DESSEM};
+    \node[dado] (weather) at (0,0.75) {\textbf{Clima}\\ ERA5-Land · Open-Meteo};
+    \node[dado] (aneel) at (0,-0.75) {\textbf{ANEEL}\\ tarifas · concessões};
+    \node[dado] (geo) at (0,-2.25) {\textbf{Geoespacial}\\ pontos · ativos · subsistemas};
+
+    \node[clima] (ctx) at (3.15,0.75) {\textbf{TRATAMENTO CLIMÁTICO}\\[1.5mm]
+      referência mensal de \textbf{10 anos}\\
+      por ponto e subsistema\\[1mm]
+      temperatura · chuva\\
+      vento · radiação solar\\[1mm]
+      \textbf{anomalias + percentis}\\
+      eventos persistentes};
+
+    \node[motor] (m1) at (7.25,0) {\textbf{\normalsize MOTOR 1 · DEMANDA}\\[1.5mm]
+      \textbf{XGBoost} regional\\
+      24 horizontes diretos: H01--H24\\
+      saída: P10 · P50 · P90\\[2mm]
+      \textcolor{laranja}{\textbf{GUARDRAILS}}\\
+      ONS com defasagem $\leq$ 6h\\
+      clima completo nas 24h\\
+      janela sem horas duplicadas\\
+      $P10 \leq P50 \leq P90$\\
+      falha de qualidade bloqueia publicação};
+
+    \node[sinal] (sig) at (10.55,0) {\textbf{system\_signal\_v1}\\ previsão + drivers\\ origem + qualidade};
+
+    \node[motor] (m2) at (13.85,0) {\textbf{\normalsize MOTOR 2 · TARIFA}\\[1.5mm]
+      pressão de demanda + oferta\\
+      multiplicador horário\\[2mm]
+      \textcolor{laranja}{\textbf{GUARDRAILS}}\\
+      faixa: 0,85--1,30$\times$\\
+      rampa: máx. $\pm$10\%/h\\
+      neutralidade: tolerância 1\%\\
+      teto: +20\% na fatura\\
+      dado inválido: volta a 1,0$\times$};
+
+    \node[saida] (consumer) at (17.25,0.85) {\textbf{Consumidor}\\ sinal para deslocar carga};
+    \node[saida] (utility) at (17.25,-0.85) {\textbf{Distribuidora}\\ pico e capacidade evitada};
+
+    \draw[seta] (weather) -- (ctx);
+    \draw[seta] (ctx) -- (m1);
+    \draw[seta] (ons.east) -| ($(m1.west)+(0,1.65)$);
+    \draw[seta] (geo.east) -| ($(m1.west)+(0,-1.65)$);
     \draw[seta,very thick,laranja] (m1) -- (sig);
     \draw[seta,very thick,laranja] (sig) -- (m2);
-    \draw[seta,verde] (m2.east) -- (s1.west);
-    \draw[seta,verde] (m2.east) -- (s2.west);
-  \end{tikzpicture}
-
+    \draw[seta] (aneel.east) -- ++(1.0,0) |- ($(m2.south)+(0,-0.05)$);
+    \draw[seta,verde] (m2.east) -- (consumer.west);
+    \draw[seta,verde] (m2.east) -- (utility.west);
+  \end{tikzpicture}%
+  }
   \vspace{1mm}
-  {\scriptsize\textcolor{cinza}{$^{*}$previsão meteorológica operacional: em integração (roadmap). Todas as demais fontes já alimentam o MVP.}}
+
+  {\scriptsize\textcolor{cinza}{O clima não entra como temperatura isolada: cada previsão é comparada ao padrão local do mês para revelar desvios capazes de alterar a curva de carga.}}
 \end{frame}
 
-% ---------- Slide 3 · Demo (1:50–2:30) ----------
+% ---------- Slide 3 · Demo (1:45–2:25) ----------
 \begin{frame}{Demo ao vivo · o produto funcionando}
   \begin{columns}[T]
     \begin{column}{0.55\textwidth}
@@ -127,36 +159,32 @@
   \end{columns}
 \end{frame}
 
-% ---------- Slide 4 · Confiança (2:30–3:10) ----------
-\begin{frame}{Dá para confiar? Cada número tem origem}
-  \begin{columns}[T]
-    \begin{column}{0.31\textwidth}
-      \centering
-      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{1};\\[2mm]
-      \textbf{Fontes oficiais}\\[1mm]
-      {\small Tudo vem de ONS, ANEEL e bases climáticas públicas. Nada inventado.}
-    \end{column}
-    \begin{column}{0.31\textwidth}
-      \centering
-      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{2};\\[2mm]
-      \textbf{``Nota fiscal'' de dados}\\[1mm]
-      {\small Cada tarifa guarda o carimbo de origem de cada insumo. Qualquer valor pode ser reproduzido e auditado depois.}
-    \end{column}
-    \begin{column}{0.31\textwidth}
-      \centering
-      \tikz\node[circle,draw=predicta,very thick,minimum size=9mm,font=\Large\bfseries,text=predicta]{3};\\[2mm]
-      \textbf{Testado contra a realidade}\\[1mm]
-      {\small Modelo congelado e confrontado com 30 dias reais que ele nunca viu.}
-    \end{column}
-  \end{columns}
-  \vspace{6mm}
-  \centering
-  \begin{beamercolorbox}[rounded=true,sep=4mm]{block body}
+% ---------- Slide 4 · Confiança (2:25–3:10) ----------
+\begin{frame}{Predicta foi mais precisa que o DESSEM}
+  \small
+  \begin{table}
     \centering
-    {\LARGE\textbf{\textcolor{verde}{Erro de previsão: metade do método tradicional}}}\\[2mm]
-    {\normalsize 2,3\% vs 4,5\% no Sudeste/Centro-Oeste · 3,3\% vs 6,7\% no Sul}\\[1mm]
-    {\footnotesize\textcolor{cinza}{e nas horas de calor extremo — quando mais importa — o erro se mantém em $\approx$2\%}}
+    \begin{tabular}{lrrr}
+      \toprule
+      \textbf{Subsistema} & \textbf{WAPE DESSEM} & \textbf{WAPE Predicta} & \textbf{menos erro} \\
+      \midrule
+      Norte & 1,97\% & 1,72\% & \textbf{12,5\%} \\
+      Nordeste & 3,46\% & 1,81\% & \textbf{47,7\%} \\
+      Sul & 4,07\% & 3,29\% & \textbf{19,2\%} \\
+      Sudeste/Centro-Oeste & 3,62\% & 2,30\% & \textbf{36,4\%} \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  \vspace{2mm}
+  \begin{beamercolorbox}[rounded=true,sep=3mm]{block body}
+    \centering
+    $\displaystyle WAPE=\frac{\sum |\mathrm{realizado}-\mathrm{previsto}|}{\sum |\mathrm{realizado}|}$\qquad
+    $\displaystyle ganho=1-\frac{WAPE_{Predicta}}{WAPE_{DESSEM}}$
   \end{beamercolorbox}
+  \vspace{2mm}
+  \centering
+  {\small Mesmas \textbf{672 horas}, mesmo subsistema e mesma carga realizada.}\par
+  {\scriptsize\textcolor{cinza}{Comparação histórica com a programação DESSEM publicada. O arquivo foi obtido retrospectivamente; ainda não é um backtest operacional ``as-of''.}}
 \end{frame}
 
 % ---------- Slide 5 · Modelo de negócio (3:10–3:50) ----------
@@ -213,7 +241,7 @@
       Granularidade & mensal & 3 postos fixos & \textbf{horária} \\
       Antecipação & reativa & estática & \textbf{preditiva 24h} \\
       Considera clima & não & não & \textbf{sim} \\
-      Proteção ao consumidor & — & — & \textbf{guardrails} \\
+      Proteção ao consumidor & — & — & \textbf{limites automáticos} \\
       Localizada por região & não & não & \textbf{sim} \\
       \bottomrule
     \end{tabular}
@@ -228,11 +256,9 @@
   \centering
   \vspace{8mm}
   {\Huge\textbf{\textcolor{predicta}{Predicta}}}\\[4mm]
-  {\Large A demanda vai continuar mudando com o clima.\\[1mm] A tarifa precisa aprender a acompanhar.}\\[8mm]
+  {\Large A curva de carga responde ao clima, ao calendário e ao comportamento.\\[1mm] A tarifa precisa aprender a acompanhar.}\\[8mm]
   {\large\textcolor{verde}{\textbf{Buscamos uma distribuidora parceira para o piloto.}}}\\[6mm]
   {\small\textcolor{cinza}{Equipe Predicta · contato}}
 \end{frame}
 
 \end{document}
-% Nota: os círculos numerados do slide 4 são marcadores — substituir por ícones (ex: pacote fontawesome5:
-% \usepackage{fontawesome5} e \faDatabase, \faStamp, \faCheckDouble) ou imagens da identidade visual.

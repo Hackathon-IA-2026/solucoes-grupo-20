@@ -441,6 +441,7 @@ def territory_summary(subsystem_id: str, selected_date: date | None) -> dict[str
                 'name': str(r.get('plant_name') or ''),
                 'uf': str(r.get('uf') or ''),
                 'source': str(r.get('source_name') or ''),
+                'source_key': str(r.get('source_key') or '').lower(),
                 'capacity_mw': None if pd.isna(r.get('capacity_mw')) else float(r.get('capacity_mw')),
                 'generation_avg_mw': None if pd.isna(r.get('generation_avg_mw')) else float(r.get('generation_avg_mw')),
                 'latitude': float(r.get('latitude')),

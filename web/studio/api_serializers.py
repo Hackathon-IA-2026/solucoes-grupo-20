@@ -24,6 +24,7 @@ class SimulationResponseSerializer(serializers.Serializer):
     concession = serializers.DictField(allow_null=True)
     optimization = serializers.DictField()
     portfolio = serializers.DictField()
+    projection = serializers.DictField()
     window = serializers.DictField()
     dessem = serializers.DictField()
     hourly = serializers.ListField(child=serializers.DictField())

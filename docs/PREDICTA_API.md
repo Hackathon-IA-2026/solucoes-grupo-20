@@ -48,6 +48,33 @@ without verified availability at forecast issue time are allowed only in replay
 mode and reported as retrospective. Missing or incomplete windows return HTTP
 400; the product does not silently continue without DESSEM.
 
+## Daily Savings
+
+`optimization_objective` accepts `flatten` or `cost`. Consumer savings and the
+portfolio curve now use the same selected objective and shifted profile;
+`consumer_optimized_consumption_kwh` mirrors `optimized_consumption_kwh`.
+The flatten objective reduces variance subject to energy, peak and cost limits.
+It can legitimately produce zero savings: a flatter curve does not guarantee a
+lower bill. Tariffs and their guardrails are unchanged by the selected scenario.
+
+- `consumer.savings_24h_rs` is the original hourly consumption cost minus the
+  shifted consumption cost, both evaluated at the same dynamic tariff.
+- `consumer.savings_month_rs` is the unrounded daily saving multiplied by
+  `projection.days` (30.4375, an average month).
+- `projection.method` is `REPEAT_SELECTED_24H_AVERAGE_MONTH`; `is_forecast` is false.
+  This assumes the selected day's consumption, tariff and participation repeat,
+  not that a month of forecasts has been generated.
+- `portfolio.customer_savings_24h_rs` and `customer_savings_month_rs` sum the
+  savings of participating consumers only. The scope is
+  `PARTICIPATING_CONSUMERS_NOT_DISTRIBUTOR_PROFIT`.
+
+The Product preset `?scenario=favorable` selects CEMIG, a synthetic residential
+profile of 900 kWh/month, 50% flexible energy, and forecast issue
+2026-08-23T23:00:00Z (20h in Sao Paulo). This window was selected for favorable
+load smoothing and positive savings among 15 available August windows. It is not
+typical-performance evidence. `?scenario=standard` restores 300 kWh/month,
+20% flexible energy and the previous issue time. Both presets remain editable.
+
 ## Supporting endpoints
 
 - `GET /api/v1/catalog/distribution-areas/` returns the concession areas as GeoJSON.

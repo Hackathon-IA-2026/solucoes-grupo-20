@@ -55,6 +55,7 @@ motor_sin/signals/real_signal.py
 motor_sin/signals/system_signal.py
 motor_sin/sources/__init__.py
 motor_sin/sources/ons_balance.py
+motor_sin/sources/ons_dessem.py
 motor_tarifa/__init__.py
 motor_tarifa/pipeline.py
 motor_tarifa/base_tariff/__init__.py
@@ -121,6 +122,7 @@ web/studio/services/metrics.py
 web/studio/services/model_registry.py
 web/studio/services/product.py
 web/studio/services/runner.py
+web/studio/services/scorecard.py
 web/studio/services/stage_registry.py
 web/studio/services/territory.py
 web/studio/services/validation.py

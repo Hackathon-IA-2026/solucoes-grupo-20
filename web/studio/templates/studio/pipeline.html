@@ -4,6 +4,12 @@
 {% block content %}
 <section class="page-header">
   <div><p class="eyebrow">Pipeline executável</p><h1>Entenda e execute cada etapa</h1><p>As etapas abaixo chamam os mesmos scripts versionados usados no terminal. O objetivo é tornar a ciência auditável para públicos técnicos e não técnicos.</p></div>
+  <details class="how-drawer"><summary>Como funciona?</summary><div class="how-panel">
+    <span class="how-kicker">Playground · Pipeline técnico</span><h3>Etapas individuais com log</h3>
+    <p>Diferente da Automação (que roda tudo), aqui você executa uma etapa por vez e acompanha o log em tempo real — útil para depurar ou atualizar só uma parte.</p>
+    <ul><li><b>Quando usar:</b> para reprocessar um artefato específico sem reconstruir o resto.</li><li><b>O que observar:</b> o status de dependências de cada etapa antes de rodar.</li></ul>
+    <p class="how-close-hint">Clique no botão novamente ou pressione Esc para fechar.</p>
+  </div></details>
   <div class="info-callout"><b>Como ler:</b> “Pronto” significa que as entradas existem; “Concluído” significa que o principal artefato de saída foi encontrado; “Bloqueado” indica dependência ausente.</div>
 </section>
 
